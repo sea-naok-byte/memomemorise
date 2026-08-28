@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="めもーず">
+<meta name="theme-color" content="#F6F2EA">
+<title>めもーず</title>
+<style>
+  :root{
+    --paper: #F6F2EA;
+    --paper-dot: #E7DFCF;
+    --ink: #2B2924;
+    --ink-soft: #6B6558;
+    --card: #FFFFFF;
+    --card-border: #E9E2D3;
+    --teal: #3E6B65;
+    --teal-soft: #E4EDEA;
+    --gold: #AD7F26;
+    --gold-soft: #F3E9D3;
+    --plum: #7C5679;
+    --plum-soft: #EFE4EE;
+    --red: #B3503F;
+    --green: #4C7A5D;
+    --shadow: 0 2px 10px rgba(43,41,36,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;}
+  body{
+    font-family: "Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image: radial-gradient(var(--paper-dot) 1px, transparent 1px);
+    background-size: 16px 16px;
+    height:100vh;
+    height:100dvh;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    background: transparent;
+    overflow:hidden;
+  }
+  .header{
+    padding:22px 20px 14px 20px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    position:relative;
+    flex-shrink:0;
+  }
+  .header h1{
+    font-size:26px;
+    margin:0;
+    letter-spacing:1px;
+    font-weight:800;
+    color:var(--ink);
+  }
+  .header .sub{
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .settings-btn{
+    position:absolute;
+    right:20px;
+    top:22px;
+    border:none;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    border-radius:50%;
+    width:34px;height:34px;
+    font-size:16px;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .subheader{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 16px 10px 16px;
+    flex-shrink:0;
+  }
+  .backbtn{
+    border:none;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    border-radius:50%;
+    width:36px;height:36px;
+    font-size:18px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
+    flex-shrink:0;
+  }
+  .subheader h2{
+    font-size:18px;
+    margin:0;
+    font-weight:800;
+  }
+  .main{
+    flex:1;
+    padding:0 16px 16px 16px;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    overflow-y:auto;
+  }
+  /* ---- home: todo section ---- */
+  .todo-section{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .section-title{
+    font-size:13px;
+    color:var(--ink-soft);
+    font-weight:700;
+    margin:4px 0 8px 4px;
+    letter-spacing:1px;
+  }
+  .todo-list{
+    flex:1;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding-bottom:8px;
+  }
+  .todo-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:12px 14px;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .todo-check{
+    width:22px;height:22px;
+    border-radius:50%;
+    border:2px solid var(--teal);
+    flex-shrink:0;
+    margin-top:1px;
+    display:flex;align-items:center;justify-content:center;
+    background:transparent;
+    cursor:pointer;
+  }
+  .todo-check.done{
+    background:var(--teal);
+  }
+  .todo-check.done::after{
+    content:"✓";
+    color:white;
+    font-size:13px;
+    font-weight:bold;
+  }
+  .todo-body{flex:1; min-width:0;}
+  .todo-text{
+    font-size:15px;
+    font-weight:600;
+    word-break:break-word;
+  }
+  .todo-text.done{
+    text-decoration:line-through;
+    color:var(--ink-soft);
+    font-weight:500;
+  }
+  .todo-deadline{
+    font-size:12px;
+    margin-top:4px;
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:8px;
+    background:var(--teal-soft);
+    color:var(--teal);
+    font-weight:700;
+  }
+  .todo-deadline.warn{background:#F6E4DF; color:var(--red);}
+  .empty-state{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13px;
+    padding:30px 10px;
+    line-height:1.7;
+  }
+  .fab{
+    position:absolute;
+    bottom:100px;
+    right:24px;
+    width:52px;height:52px;
+    border-radius:50%;
+    background:var(--teal);
+    color:white;
+    font-size:26px;
+    border:none;
+    box-shadow:0 4px 14px rgba(62,107,101,0.4);
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    line-height:0;
+  }
+  /* ---- bottom nav ---- */
+  .bottom-nav{
+    display:flex;
+    gap:8px;
+    padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px)) 16px;
+    background:var(--card);
+    border-top:1px dashed var(--card-border);
+    position:relative;
+    flex-shrink:0;
+  }
+  .bottom-nav::before{
+    content:"";
+    position:absolute;
+    top:-1px; left:20px; right:20px;
+    height:1px;
+    background:repeating-linear-gradient(90deg, var(--card-border) 0 6px, transparent 6px 10px);
+  }
+  .nav-btn{
+    flex:1;
+    background:var(--paper);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:10px 6px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .nav-btn .icon{font-size:20px; line-height:1;}
+  .nav-btn .label{font-size:11px; font-weight:700;}
+  .nav-btn .amount{font-size:12px; font-weight:800;}
+  .nav-btn.shift .amount{color:var(--gold);}
+  .nav-btn.personal .amount{color:var(--teal);}
+  .nav-btn.ent .amount{color:var(--plum);}
+  /* ---- month list ---- */
+  .month-list{display:flex; flex-direction:column; gap:10px;}
+  .month-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .month-card .month-label{font-size:15px; font-weight:700;}
+  .month-card .month-total{font-size:18px; font-weight:800;}
+  .add-btn{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    border:none;
+    background:var(--teal);
+    color:white;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin-bottom:14px;
+  }
+  .add-btn.personal{background:var(--teal);}
+  .add-btn.shift{background:var(--gold);}
+  .add-btn.ent{background:var(--plum);}
+  .year-btn{
+    width:100%;
+    padding:12px;
+    border-radius:14px;
+    border:1px dashed var(--card-border);
+    background:var(--card);
+    color:var(--ink);
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    margin-bottom:16px;
+  }
+  .year-chip-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px;}
+  .year-chip{
+    padding:9px 16px;
+    border-radius:999px;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .year-chip.active.personal{background:var(--teal); border-color:var(--teal); color:white;}
+  .year-chip.active.ent{background:var(--plum); border-color:var(--plum); color:white;}
+  .year-month-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .year-month-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .year-month-head .m-label{font-size:14px; font-weight:800;}
+  .year-month-head .m-total{font-size:16px; font-weight:800;}
+  .breakdown-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--ink-soft);
+    padding:3px 0;
+    border-top:1px dotted var(--card-border);
+  }
+  .breakdown-row:first-child{border-top:none;}
+  .entry-left .entry-comment{font-size:11px; color:var(--ink-soft); margin-top:3px; font-style:italic;}
+  /* ---- entry list (in month detail) ---- */
+  .entry-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+  }
+  .entry-left .entry-date{font-size:12px; color:var(--ink-soft); font-weight:700;}
+  .entry-left .entry-type{font-size:14px; font-weight:700; margin-top:2px;}
+  .entry-left .entry-sub{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .entry-amount{font-size:16px; font-weight:800; white-space:nowrap;}
+  .entry-amount.neg{color:var(--red);}
+  .entry-amount.pos{color:var(--green);}
+  .entry-right{display:flex; align-items:center; gap:10px; flex-shrink:0;}
+  .entry-del{
+    border:none;
+    background:transparent;
+    font-size:16px;
+    cursor:pointer;
+    padding:4px;
+    line-height:1;
+    opacity:0.55;
+  }
+  .entry-del:hover, .entry-del:active{opacity:1;}
+  /* ---- form ---- */
+  .form-group{margin-bottom:16px;}
+  .form-label{font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; display:block;}
+  input[type=text], input[type=date], textarea{
+    width:100%;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+  }
+  textarea{resize:vertical; min-height:90px;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    padding:9px 14px;
+    border-radius:999px;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .chip.active{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:white;
+  }
+  .chip.active.shiftc{background:var(--gold); border-color:var(--gold);}
+  .chip.active.entc{background:var(--plum); border-color:var(--plum);}
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .stepper button{
+    width:36px;height:36px;
+    border-radius:50%;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    font-size:18px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .stepper .val{font-size:17px; font-weight:800; min-width:28px; text-align:center;}
+  .amount-preview{
+    background:var(--gold-soft);
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+    margin-bottom:16px;
+  }
+  .amount-preview .num{font-size:24px; font-weight:800; color:var(--gold);}
+  .amount-preview .cap{font-size:11px; color:var(--ink-soft); font-weight:700;}
+  .save-btn{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    border:none;
+    background:var(--ink);
+    color:white;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .delete-btn{
+    width:100%;
+    padding:12px;
+    border-radius:14px;
+    border:1px solid var(--red);
+    background:transparent;
+    color:var(--red);
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:10px;
+  }
+  .settings-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:14px;
+    box-shadow:var(--shadow);
+  }
+  .settings-card h3{margin:0 0 6px 0; font-size:14px; font-weight:800;}
+  .settings-card p{margin:0 0 12px 0; font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
+  .settings-btn-row{display:flex; flex-direction:column; gap:10px;}
+  .backup-btn{
+    padding:12px;
+    border-radius:12px;
+    border:none;
+    background:var(--teal);
+    color:white;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    text-align:center;
+  }
+  .restore-label{
+    padding:12px;
+    border-radius:12px;
+    border:1px dashed var(--card-border);
+    background:var(--paper);
+    color:var(--ink);
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    text-align:center;
+    display:block;
+  }
+  .settings-status{font-size:12px; color:var(--teal); margin-top:8px; font-weight:700; min-height:16px;}
+  .sign-row{display:flex; gap:8px;}
+  .sign-btn{
+    flex:1;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .sign-btn.plus.active{background:var(--green); border-color:var(--green); color:white;}
+  .sign-btn.minus.active{background:var(--red); border-color:var(--red); color:white;}
+  .loading{padding:40px; text-align:center; color:var(--ink-soft); font-size:13px;}
+  ::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">読み込み中…</div></div>
+
+<script>
+(function(){
+  const CATS = {
+    shiftTypes: ["加須当直","彩の国当直","加須1日","彩の国1日"],
+    personalCats: ["ジュース","コンビニ：おやつ","コンビニ：朝","コンビニ：昼","コンビニ：夜","外食：朝","外食：昼","飲み会：一人","飲み会：複数","日本酒/ワイン"],
+    entCats: ["パチスロ","麻雀"]
+  };
+
+  let todos = [];
+  let shifts = [];
+  let personals = [];
+  let ents = [];
+
+  let state = { page: 'home' };
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  function yen(n){ return "¥" + Math.round(n).toLocaleString('ja-JP'); }
+  function todayStr(){ const d = new Date(); return d.toISOString().slice(0,10); }
+  function monthKeyOf(dateStr){ return dateStr ? dateStr.slice(0,7) : ''; }
+  function monthLabel(key){
+    if(!key) return '';
+    const [y,m] = key.split('-');
+    return y + '年' + parseInt(m,10) + '月';
+  }
+  function fmtDate(dateStr){
+    if(!dateStr) return '';
+    const [y,m,d] = dateStr.split('-');
+    return parseInt(m,10) + '/' + parseInt(d,10);
+  }
+
+  // this app is a standalone page: data is saved to the browser's own local storage
+  // (independent of Claude), so it works fully offline once installed on your phone.
+  async function loadArr(key){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  async function saveArr(key, arr){
+    try{ localStorage.setItem(key, JSON.stringify(arr)); }
+    catch(e){ console.error('save failed', key, e); }
+  }
+
+  function shiftBaseAmount(type){
+    switch(type){
+      case '加須当直': return 80000;
+      case '彩の国当直': return 70000;
+      case '加須1日': return 170000;
+      case '彩の国1日': return 140000;
+      default: return 0;
+    }
+  }
+  function computeShiftAmount(type, ambulance, admission){
+    ambulance = ambulance||0; admission = admission||0;
+    return shiftBaseAmount(type) + (ambulance+admission)*3000;
+  }
+
+  function groupByMonth(list, dateKey){
+    const map = {};
+    list.forEach(item=>{
+      const k = monthKeyOf(item[dateKey]);
+      if(!map[k]) map[k] = [];
+      map[k].push(item);
+    });
+    return Object.keys(map).sort().reverse().map(k=>({key:k, items:map[k]}));
+  }
+
+  function getYears(list, dateKey){
+    const s = new Set();
+    list.forEach(i=>{ if(i[dateKey]) s.add(i[dateKey].slice(0,4)); });
+    const arr = Array.from(s).sort().reverse();
+    return arr.length ? arr : [String(new Date().getFullYear())];
+  }
+
+  function go(page, params){
+    state = Object.assign({page}, params||{});
+    render();
+  }
+
+  // ---------------- RENDER ----------------
+  function render(){
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    if(state.page === 'home') return renderHome(app);
+    if(state.page === 'todoForm') return renderTodoForm(app);
+    if(state.page === 'settings') return renderSettings(app);
+    if(state.page === 'shiftList') return renderYearMonthList(app, {
+      title:'当直メモ', data:shifts, dateKey:'date', catKey:'type', navClass:'shift',
+      onMonth:(k)=>go('shiftMonth',{monthKey:k}),
+      onAdd:()=>go('shiftForm',{}),
+      amountOf:(it)=>it.amount
+    });
+    if(state.page === 'shiftMonth') return renderShiftMonth(app);
+    if(state.page === 'shiftForm') return renderShiftForm(app);
+    if(state.page === 'personalList') return renderYearMonthList(app, {
+      title:'個人出費', data:personals, dateKey:'date', catKey:'category', navClass:'personal',
+      onMonth:(k)=>go('personalMonth',{monthKey:k}),
+      onAdd:()=>go('personalForm',{}),
+      amountOf:(it)=>it.amount
+    });
+    if(state.page === 'personalMonth') return renderPersonalMonth(app);
+    if(state.page === 'personalForm') return renderPersonalForm(app);
+    if(state.page === 'entList') return renderYearMonthList(app, {
+      title:'娯楽出費', data:ents, dateKey:'date', catKey:'category', navClass:'ent',
+      onMonth:(k)=>go('entMonth',{monthKey:k}),
+      onAdd:()=>go('entForm',{}),
+      amountOf:(it)=> it.sign==='minus' ? -it.amount : it.amount
+    });
+    if(state.page === 'entMonth') return renderEntMonth(app);
+    if(state.page === 'entForm') return renderEntForm(app);
+  }
+
+  function el(tag, cls, html){
+    const e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(html!==undefined) e.innerHTML = html;
+    return e;
+  }
+
+  // ---------- HOME ----------
+  function renderHome(app){
+    const header = el('div','header');
+    header.innerHTML = '<h1>めもーず</h1><span class="sub">個人用メモ</span>';
+    const settingsBtn = el('button','settings-btn','⚙');
+    settingsBtn.onclick = ()=> go('settings',{});
+    header.appendChild(settingsBtn);
+    app.appendChild(header);
+
+    const main = el('div','main');
+    main.style.position = 'relative';
+
+    const todoSection = el('div','todo-section');
+    todoSection.appendChild(el('div','section-title','やること'));
+
+    const list = el('div','todo-list');
+    const sorted = [...todos].sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      if(!a.deadline && !b.deadline) return 0;
+      if(!a.deadline) return 1;
+      if(!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    });
+
+    if(sorted.length === 0){
+      list.appendChild(el('div','empty-state','やることがありません。右下の＋から追加しましょう。'));
+    } else {
+      sorted.forEach(t=>{
+        const card = el('div','todo-card');
+        const chk = el('div','todo-check' + (t.done?' done':''));
+        chk.onclick = (ev)=>{ ev.stopPropagation(); t.done = !t.done; saveArr('memoz_todos', todos); render(); };
+        const body = el('div','todo-body');
+        const textEl = el('div','todo-text' + (t.done?' done':''), escapeHtml(t.text));
+        body.appendChild(textEl);
+        if(t.deadline){
+          const isSoon = !t.done && isDeadlineSoon(t.deadline);
+          const dl = el('span','todo-deadline' + (isSoon?' warn':''), '期限 ' + t.deadline.replace(/-/g,'/'));
+          body.appendChild(dl);
+        }
+        card.appendChild(chk);
+        card.appendChild(body);
+        card.onclick = ()=> go('todoForm', {editId: t.id});
+        list.appendChild(card);
+      });
+    }
+    todoSection.appendChild(list);
+    main.appendChild(todoSection);
+
+    const fab = el('button','fab','＋');
+    fab.onclick = ()=> go('todoForm', {});
+    main.appendChild(fab);
+
+    app.appendChild(main);
+
+    // bottom nav
+    const nav = el('div','bottom-nav');
+    nav.appendChild(navBtn('当直メモ','shift', shiftMonthTotal(currentMonthKey()), ()=>go('shiftList',{})));
+    nav.appendChild(navBtn('個人出費','personal', sumMonth(personals,'date','amount',currentMonthKey()), ()=>go('personalList',{})));
+    nav.appendChild(navBtn('娯楽出費','ent', entMonthTotal(currentMonthKey()), ()=>go('entList',{})));
+    app.appendChild(nav);
+  }
+
+  function navBtn(label, cls, amount, onClick){
+    const btn = el('div','nav-btn ' + cls);
+    const icons = {shift:'🏥', personal:'👛', ent:'🎲'};
+    btn.innerHTML = '<div class="icon">'+icons[cls]+'</div><div class="label">'+label+'</div><div class="amount">'+yen(amount)+'</div>';
+    btn.onclick = onClick;
+    return btn;
+  }
+
+  function currentMonthKey(){ return todayStr().slice(0,7); }
+  function sumMonth(list, dateKey, amtKey, monthKey){
+    return list.filter(i=>monthKeyOf(i[dateKey])===monthKey).reduce((s,i)=>s+i[amtKey],0);
+  }
+  function shiftMonthTotal(monthKey){
+    return shifts.filter(i=>monthKeyOf(i.date)===monthKey).reduce((s,i)=>s+i.amount,0);
+  }
+  function entMonthTotal(monthKey){
+    return ents.filter(i=>monthKeyOf(i.date)===monthKey).reduce((s,i)=>s + (i.sign==='minus'?-i.amount:i.amount),0);
+  }
+
+  function isDeadlineSoon(deadline){
+    const d = new Date(deadline);
+    const now = new Date(todayStr());
+    const diff = (d-now)/(1000*60*60*24);
+    return diff <= 2;
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function subHeader(app, title, onBack){
+    const sh = el('div','subheader');
+    const back = el('button','backbtn','←');
+    back.onclick = onBack;
+    sh.appendChild(back);
+    sh.appendChild(el('h2',null,title));
+    app.appendChild(sh);
+  }
+
+  // ---------- TODO FORM ----------
+  function renderTodoForm(app){
+    const editing = state.editId ? todos.find(t=>t.id===state.editId) : null;
+    subHeader(app, editing ? 'やること' : '新規のやること', ()=>go('home',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','内容'));
+    const textInput = el('input'); textInput.type='text'; textInput.value = editing? editing.text : '';
+    textInput.placeholder = '例：〇〇の資料を提出する';
+    g1.appendChild(textInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','期限（任意）'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing? (editing.deadline||'') : '';
+    g2.appendChild(dateInput);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','詳細（任意）'));
+    const detailInput = el('textarea');
+    detailInput.value = editing? (editing.detail||'') : '';
+    detailInput.placeholder = 'メモや詳細を書けます';
+    g3.appendChild(detailInput);
+    main.appendChild(g3);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing ? '更新する' : '追加する');
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const text = textInput.value.trim();
+      if(!text){ alert('内容を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      if(editing){
+        editing.text = text; editing.deadline = dateInput.value || null; editing.detail = detailInput.value;
+      } else {
+        todos.push({id:uid(), text, deadline: dateInput.value || null, detail: detailInput.value, done:false});
+      }
+      await saveArr('memoz_todos', todos);
+      go('home',{});
+    };
+    main.appendChild(saveBtn);
+
+    if(editing){
+      const delBtn = el('button','delete-btn','削除する');
+      delBtn.onclick = async ()=>{
+        if(confirm('このやることを削除しますか？')){
+          todos = todos.filter(t=>t.id!==editing.id);
+          await saveArr('memoz_todos', todos);
+          go('home',{});
+        }
+      };
+      main.appendChild(delBtn);
+    }
+    app.appendChild(main);
+  }
+
+  // ---------- generic month list page ----------
+  // ---------- unified list page: add button + year tabs + per-month breakdown ----------
+  function renderYearMonthList(app, cfg){
+    subHeader(app, cfg.title, ()=>go('home',{}));
+    const main = el('div','main');
+    const addBtn = el('button','add-btn ' + cfg.navClass, '＋ 新規登録');
+    addBtn.onclick = cfg.onAdd;
+    main.appendChild(addBtn);
+
+    if(cfg.data.length===0){
+      main.appendChild(el('div','empty-state','まだ記録がありません。＋新規登録から追加しましょう。'));
+      app.appendChild(main);
+      return;
+    }
+
+    const years = getYears(cfg.data, cfg.dateKey);
+    const yearStateKey = 'year_' + cfg.navClass;
+    const year = state[yearStateKey] && years.includes(state[yearStateKey]) ? state[yearStateKey] : years[0];
+
+    const yearRow = el('div','year-chip-row');
+    years.forEach(y=>{
+      const chip = el('div','year-chip ' + cfg.navClass + (y===year?' active':''), y+'年');
+      chip.onclick = ()=>{ state[yearStateKey] = y; render(); };
+      yearRow.appendChild(chip);
+    });
+    main.appendChild(yearRow);
+
+    const yearItems = cfg.data.filter(i=> (i[cfg.dateKey]||'').slice(0,4) === year);
+    const yearTotal = yearItems.reduce((s,it)=>s+cfg.amountOf(it),0);
+    main.appendChild(el('div','amount-preview','<div class="num" style="color:'+(yearTotal<0?'var(--red)':'var(--ink)')+'">'+yen(yearTotal)+'</div><div class="cap">'+year+'年 合計</div>'));
+
+    const byMonth = {};
+    yearItems.forEach(it=>{
+      const mk = it[cfg.dateKey].slice(5,7);
+      if(!byMonth[mk]) byMonth[mk] = [];
+      byMonth[mk].push(it);
+    });
+    const months = Object.keys(byMonth).sort().reverse();
+
+    if(months.length===0){
+      main.appendChild(el('div','empty-state', year+'年の記録がありません。'));
+    } else {
+      months.forEach(mk=>{
+        const items = byMonth[mk];
+        const monthKey = year + '-' + mk;
+        const total = items.reduce((s,it)=>s+cfg.amountOf(it),0);
+        const card = el('div','year-month-card');
+        card.onclick = ()=> cfg.onMonth(monthKey);
+        const head = el('div','year-month-head');
+        head.innerHTML = '<span class="m-label">'+parseInt(mk,10)+'月</span><span class="m-total" style="color:'+(total<0?'var(--red)':'var(--ink)')+'">'+(total<0?'−':'')+yen(Math.abs(total))+'</span>';
+        card.appendChild(head);
+
+        const byCat = {};
+        items.forEach(it=>{
+          const c = it[cfg.catKey];
+          byCat[c] = (byCat[c]||0) + cfg.amountOf(it);
+        });
+        Object.keys(byCat).sort((a,b)=>Math.abs(byCat[b])-Math.abs(byCat[a])).forEach(c=>{
+          const amt = byCat[c];
+          const row = el('div','breakdown-row');
+          row.innerHTML = '<span>'+c+'</span><span style="color:'+(amt<0?'var(--red)':'var(--ink)')+'">'+(amt<0?'−':'')+yen(Math.abs(amt))+'</span>';
+          card.appendChild(row);
+        });
+        main.appendChild(card);
+      });
+    }
+    app.appendChild(main);
+  }
+
+  function renderShiftMonth(app){
+    const key = state.monthKey;
+    subHeader(app, monthLabel(key) + '・当直メモ', ()=>go('shiftList',{}));
+    const main = el('div','main');
+    const items = shifts.filter(i=>monthKeyOf(i.date)===key).sort((a,b)=>b.date.localeCompare(a.date));
+    const total = items.reduce((s,i)=>s+i.amount,0);
+    main.appendChild(el('div','amount-preview','<div class="num">'+yen(total)+'</div><div class="cap">今月の合計</div>'));
+    items.forEach(it=>{
+      const card = el('div','entry-card');
+      const sub = '救急車'+(it.ambulance||0)+'例・入院'+(it.admission||0)+'例';
+      const commentHtml = it.comment ? '<div class="entry-comment">'+escapeHtml(it.comment)+'</div>' : '';
+      card.innerHTML = '<div class="entry-left"><div class="entry-date">'+fmtDate(it.date)+'</div><div class="entry-type">'+it.type+'</div><div class="entry-sub">'+sub+'</div>'+commentHtml+'</div><div class="entry-amount">'+yen(it.amount)+'</div>';
+      card.onclick = ()=> go('shiftForm', {editId: it.id, monthKey:key});
+      main.appendChild(card);
+    });
+    app.appendChild(main);
+  }
+
+  function renderShiftForm(app){
+    const editing = state.editId ? shifts.find(s=>s.id===state.editId) : null;
+    const initial = {
+      dateVal: editing ? editing.date : todayStr(),
+      selType: editing ? editing.type : CATS.shiftTypes[0],
+      ambulance: editing ? (editing.ambulance||0) : 0,
+      admission: editing ? (editing.admission||0) : 0,
+      comment: editing ? (editing.comment||'') : ''
+    };
+    renderShiftFormFull(app, editing, initial.dateVal, initial.selType, initial.ambulance, initial.admission, initial.comment);
+  }
+
+  // single source of truth for the shift form; every interaction re-renders through here
+  function renderShiftFormFull(app, editing, dateVal, selType, ambulance, admission, commentVal){
+    app.innerHTML = '';
+    subHeader(app, editing?'当直の編集':'当直メモの新規登録', ()=> editing ? go('shiftMonth',{monthKey: state.monthKey}) : go('shiftList',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','日付'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = dateVal;
+    dateInput.onchange = ()=> renderShiftFormFull(app, editing, dateInput.value, selType, ambulance, admission, commentInput.value);
+    g1.appendChild(dateInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','区分'));
+    const chipRow = el('div','chip-row');
+    CATS.shiftTypes.forEach(t=>{
+      const chip = el('div','chip shiftc' + (t===selType?' active':''), t);
+      chip.onclick = ()=> renderShiftFormFull(app, editing, dateInput.value, t, ambulance, admission, commentInput.value);
+      chipRow.appendChild(chip);
+    });
+    g2.appendChild(chipRow);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','救急車 件数'));
+    g3.appendChild(makeStepperStatic(ambulance, (v)=> renderShiftFormFull(app, editing, dateInput.value, selType, v, admission, commentInput.value)));
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','入院 件数'));
+    g4.appendChild(makeStepperStatic(admission, (v)=> renderShiftFormFull(app, editing, dateInput.value, selType, ambulance, v, commentInput.value)));
+    main.appendChild(g4);
+
+    const amount = computeShiftAmount(selType, ambulance, admission);
+    main.appendChild(el('div','amount-preview','<div class="num">'+yen(amount)+'</div><div class="cap">合計金額（基本'+yen(shiftBaseAmount(selType))+'＋件数'+(ambulance+admission)+'件×3000円）</div>'));
+
+    const g5 = el('div','form-group');
+    g5.appendChild(el('label','form-label','コメント（任意）'));
+    const commentInput = el('textarea');
+    commentInput.value = commentVal || '';
+    commentInput.placeholder = '申し送りやメモなど';
+    g5.appendChild(commentInput);
+    main.appendChild(g5);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'登録する');
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const comment = commentInput.value;
+      if(editing){
+        editing.date = dateInput.value; editing.type = selType; editing.ambulance = ambulance; editing.admission = admission; editing.amount = amount; editing.comment = comment;
+      } else {
+        shifts.push({id:uid(), date: dateInput.value, type:selType, ambulance, admission, amount, comment});
+      }
+      await saveArr('memoz_shifts', shifts);
+      go('shiftList',{});
+    };
+    main.appendChild(saveBtn);
+
+    if(editing){
+      let deleting = false;
+      const delBtn = el('button','delete-btn','削除する');
+      delBtn.onclick = async ()=>{
+        if(deleting) return;
+        if(confirm('この記録を削除しますか？')){
+          deleting = true;
+          shifts = shifts.filter(s=>s.id!==editing.id);
+          await saveArr('memoz_shifts', shifts);
+          go('shiftList',{});
+        }
+      };
+      main.appendChild(delBtn);
+    }
+    app.appendChild(main);
+  }
+
+  function makeStepperStatic(val, onChange){
+    const wrap = el('div','stepper');
+    const minus = el('button',null,'−');
+    minus.onclick = ()=> onChange(Math.max(0, val-1));
+    const valSpan = el('div','val', String(val));
+    const plus = el('button',null,'＋');
+    plus.onclick = ()=> onChange(val+1);
+    wrap.appendChild(minus); wrap.appendChild(valSpan); wrap.appendChild(plus);
+    return wrap;
+  }
+
+  // ---------- PERSONAL EXPENSE ----------
+  function renderPersonalMonth(app){
+    const key = state.monthKey;
+    subHeader(app, monthLabel(key) + '・個人出費', ()=>go('personalList',{}));
+    const main = el('div','main');
+    const items = personals.filter(i=>monthKeyOf(i.date)===key).sort((a,b)=>b.date.localeCompare(a.date));
+    const total = items.reduce((s,i)=>s+i.amount,0);
+    main.appendChild(el('div','amount-preview','<div class="num">'+yen(total)+'</div><div class="cap">今月の合計</div>'));
+    items.forEach(it=>{
+      const card = el('div','entry-card');
+      const commentHtml = it.comment ? '<div class="entry-comment">'+escapeHtml(it.comment)+'</div>' : '';
+      const left = el('div','entry-left');
+      left.innerHTML = '<div class="entry-date">'+fmtDate(it.date)+'</div><div class="entry-type">'+it.category+'</div>'+commentHtml;
+      const right = el('div','entry-right');
+      const amountEl = el('div','entry-amount', yen(it.amount));
+      const delBtn = el('button','entry-del','🗑');
+      delBtn.onclick = async (ev)=>{
+        ev.stopPropagation();
+        if(confirm('この記録を削除しますか？')){
+          personals = personals.filter(p=>p.id!==it.id);
+          await saveArr('memoz_personal', personals);
+          render();
+        }
+      };
+      right.appendChild(amountEl);
+      right.appendChild(delBtn);
+      card.appendChild(left);
+      card.appendChild(right);
+      card.onclick = ()=> renderPersonalFormFull(app, personals.find(p=>p.id===it.id), it.date, it.category, it.amount, key, it.comment||'');
+      main.appendChild(card);
+    });
+    app.appendChild(main);
+  }
+
+  function renderPersonalForm(app){
+    renderPersonalFormFull(app, null, todayStr(), CATS.personalCats[0], '', null, '');
+  }
+
+  function renderPersonalFormFull(app, editing, dateVal, cat, amountVal, monthKey, commentVal){
+    app.innerHTML='';
+    subHeader(app, editing?'個人出費の編集':'個人出費の新規登録', ()=> editing ? go('personalMonth',{monthKey}) : go('personalList',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','日付'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = dateVal;
+    dateInput.onchange = ()=> renderPersonalFormFull(app, editing, dateInput.value, cat, amountInput.value, monthKey, commentInput.value);
+    g1.appendChild(dateInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','項目'));
+    const chipRow = el('div','chip-row');
+    CATS.personalCats.forEach(c=>{
+      const chip = el('div','chip' + (c===cat?' active':''), c);
+      chip.onclick = ()=> renderPersonalFormFull(app, editing, dateInput.value, c, amountInput.value, monthKey, commentInput.value);
+      chipRow.appendChild(chip);
+    });
+    g2.appendChild(chipRow);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','金額（円）'));
+    const amountInput = el('input'); amountInput.type='text'; amountInput.inputMode='numeric';
+    amountInput.value = amountVal;
+    amountInput.placeholder = '例：500';
+    g3.appendChild(amountInput);
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','コメント（任意）'));
+    const commentInput = el('textarea');
+    commentInput.value = commentVal || '';
+    commentInput.placeholder = '何を買ったかなどメモできます';
+    g4.appendChild(commentInput);
+    main.appendChild(g4);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'登録する');
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const amt = parseInt((amountInput.value||'').replace(/[^0-9]/g,''),10);
+      if(!dateInput.value || isNaN(amt)){ alert('日付と金額を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const comment = commentInput.value;
+      if(editing){
+        editing.date = dateInput.value; editing.category = cat; editing.amount = amt; editing.comment = comment;
+      } else {
+        personals.push({id:uid(), date: dateInput.value, category: cat, amount: amt, comment});
+      }
+      await saveArr('memoz_personal', personals);
+      go('personalList',{});
+    };
+    main.appendChild(saveBtn);
+
+    if(editing){
+      const delBtn = el('button','delete-btn','削除する');
+      delBtn.onclick = async ()=>{
+        if(confirm('この記録を削除しますか？')){
+          personals = personals.filter(p=>p.id!==editing.id);
+          await saveArr('memoz_personal', personals);
+          go('personalList',{});
+        }
+      };
+      main.appendChild(delBtn);
+    }
+    app.appendChild(main);
+  }
+
+  // ---------- ENTERTAINMENT ----------
+  function renderEntMonth(app){
+    const key = state.monthKey;
+    subHeader(app, monthLabel(key) + '・娯楽出費', ()=>go('entList',{}));
+    const main = el('div','main');
+    const items = ents.filter(i=>monthKeyOf(i.date)===key).sort((a,b)=>b.date.localeCompare(a.date));
+    const total = items.reduce((s,i)=>s+(i.sign==='minus'?-i.amount:i.amount),0);
+    main.appendChild(el('div','amount-preview','<div class="num" style="color:'+(total<0?'var(--red)':'var(--green)')+'">'+(total<0?'−':'+')+yen(Math.abs(total))+'</div><div class="cap">今月の収支</div>'));
+    items.forEach(it=>{
+      const card = el('div','entry-card');
+      const signed = it.sign==='minus' ? -it.amount : it.amount;
+      const commentHtml = it.comment ? '<div class="entry-comment">'+escapeHtml(it.comment)+'</div>' : '';
+      const left = el('div','entry-left');
+      left.innerHTML = '<div class="entry-date">'+fmtDate(it.date)+'</div><div class="entry-type">'+it.category+'</div>'+commentHtml;
+      const right = el('div','entry-right');
+      const amountEl = el('div','entry-amount ' + (signed<0?'neg':'pos'), (signed<0?'−':'+')+yen(Math.abs(signed)));
+      const delBtn = el('button','entry-del','🗑');
+      delBtn.onclick = async (ev)=>{
+        ev.stopPropagation();
+        if(confirm('この記録を削除しますか？')){
+          ents = ents.filter(e=>e.id!==it.id);
+          await saveArr('memoz_ent', ents);
+          render();
+        }
+      };
+      right.appendChild(amountEl);
+      right.appendChild(delBtn);
+      card.appendChild(left);
+      card.appendChild(right);
+      card.onclick = ()=> renderEntFormFull(app, it, it.date, it.category, it.amount, it.sign, key, it.comment||'');
+      main.appendChild(card);
+    });
+    app.appendChild(main);
+  }
+
+  function renderEntForm(app){
+    renderEntFormFull(app, null, todayStr(), CATS.entCats[0], '', 'minus', null, '');
+  }
+
+  function renderEntFormFull(app, editing, dateVal, cat, amountVal, sign, monthKey, commentVal){
+    app.innerHTML='';
+    subHeader(app, editing?'娯楽出費の編集':'娯楽出費の新規登録', ()=> editing ? go('entMonth',{monthKey}) : go('entList',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','日付'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = dateVal;
+    dateInput.onchange = ()=> renderEntFormFull(app, editing, dateInput.value, cat, amountInput.value, sign, monthKey, commentInput.value);
+    g1.appendChild(dateInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','項目'));
+    const chipRow = el('div','chip-row');
+    CATS.entCats.forEach(c=>{
+      const chip = el('div','chip entc' + (c===cat?' active':''), c);
+      chip.onclick = ()=> renderEntFormFull(app, editing, dateInput.value, c, amountInput.value, sign, monthKey, commentInput.value);
+      chipRow.appendChild(chip);
+    });
+    g2.appendChild(chipRow);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','収支'));
+    const signRow = el('div','sign-row');
+    const plusBtn = el('div','sign-btn plus' + (sign==='plus'?' active':''), '＋ プラス');
+    plusBtn.onclick = ()=> renderEntFormFull(app, editing, dateInput.value, cat, amountInput.value, 'plus', monthKey, commentInput.value);
+    const minusBtn = el('div','sign-btn minus' + (sign==='minus'?' active':''), '− マイナス');
+    minusBtn.onclick = ()=> renderEntFormFull(app, editing, dateInput.value, cat, amountInput.value, 'minus', monthKey, commentInput.value);
+    signRow.appendChild(plusBtn); signRow.appendChild(minusBtn);
+    g3.appendChild(signRow);
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','金額（円）'));
+    const amountInput = el('input'); amountInput.type='text'; amountInput.inputMode='numeric';
+    amountInput.value = amountVal;
+    amountInput.placeholder = '例：3000';
+    g4.appendChild(amountInput);
+    main.appendChild(g4);
+
+    const g5 = el('div','form-group');
+    g5.appendChild(el('label','form-label','コメント（任意）'));
+    const commentInput = el('textarea');
+    commentInput.value = commentVal || '';
+    commentInput.placeholder = 'メモを書けます';
+    g5.appendChild(commentInput);
+    main.appendChild(g5);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'登録する');
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const amt = parseInt((amountInput.value||'').replace(/[^0-9]/g,''),10);
+      if(!dateInput.value || isNaN(amt)){ alert('日付と金額を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const comment = commentInput.value;
+      if(editing){
+        editing.date = dateInput.value; editing.category = cat; editing.amount = amt; editing.sign = sign; editing.comment = comment;
+      } else {
+        ents.push({id:uid(), date: dateInput.value, category: cat, amount: amt, sign, comment});
+      }
+      await saveArr('memoz_ent', ents);
+      go('entList',{});
+    };
+    main.appendChild(saveBtn);
+
+    if(editing){
+      const delBtn = el('button','delete-btn','削除する');
+      delBtn.onclick = async ()=>{
+        if(confirm('この記録を削除しますか？')){
+          ents = ents.filter(e=>e.id!==editing.id);
+          await saveArr('memoz_ent', ents);
+          go('entList',{});
+        }
+      };
+      main.appendChild(delBtn);
+    }
+    app.appendChild(main);
+  }
+
+  // ---------- SETTINGS / BACKUP ----------
+  function renderSettings(app){
+    subHeader(app, '設定・バックアップ', ()=>go('home',{}));
+    const main = el('div','main');
+
+    const info = el('div','settings-card');
+    info.innerHTML = '<h3>データの保存について</h3><p>「やること」「当直メモ」「個人出費」「娯楽出費」のデータは、この端末のこのブラウザ（アプリ）の中に自動的に保存されます。クラウド同期はしていないため、他の端末やブラウザからは見られません。ブラウザのデータ消去や機種変更でデータが消える場合があるので、下の「バックアップ」を定期的に取ることをおすすめします。</p>';
+    main.appendChild(info);
+
+    const backupCard = el('div','settings-card');
+    backupCard.innerHTML = '<h3>バックアップファイルを保存</h3><p>すべてのデータを1つのファイル（.json）に書き出せます。Googleドライブなど、この端末以外の場所にも保存しておくと安心です。</p>';
+    const btnRow = el('div','settings-btn-row');
+    const exportBtn = el('button','backup-btn','⬇ バックアップをダウンロード');
+    exportBtn.onclick = ()=>{
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        app: 'めもーず',
+        todos, shifts, personals, ents
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const now = new Date();
+      const stamp = now.toISOString().slice(0,10);
+      a.href = url;
+      a.download = 'memoz_backup_' + stamp + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      status.textContent = 'バックアップファイルをダウンロードしました。';
+    };
+    btnRow.appendChild(exportBtn);
+    backupCard.appendChild(btnRow);
+    const status = el('div','settings-status','');
+    backupCard.appendChild(status);
+    main.appendChild(backupCard);
+
+    const restoreCard = el('div','settings-card');
+    restoreCard.innerHTML = '<h3>バックアップから復元</h3><p>保存しておいた .json ファイルを選ぶと、そのファイルの内容で今のデータを上書きします。機種変更や再インストール後に使えます。</p>';
+    const fileId = 'restoreFile_' + uid();
+    const label = el('label','restore-label','📂 ファイルを選んで復元する');
+    label.htmlFor = fileId;
+    const fileInput = el('input');
+    fileInput.type='file'; fileInput.accept='application/json,.json'; fileInput.id = fileId;
+    fileInput.style.display='none';
+    const restoreStatus = el('div','settings-status','');
+    fileInput.onchange = async (ev)=>{
+      const file = ev.target.files[0];
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if(!data || (!data.todos && !data.shifts && !data.personals && !data.ents)){
+          restoreStatus.style.color = 'var(--red)';
+          restoreStatus.textContent = 'このファイルは「めもーず」のバックアップ形式ではないようです。';
+          return;
+        }
+        if(!confirm('現在のデータを、このファイルの内容で上書きします。よろしいですか？')) return;
+        todos = data.todos || [];
+        shifts = data.shifts || [];
+        personals = data.personals || [];
+        ents = data.ents || [];
+        await Promise.all([
+          saveArr('memoz_todos', todos),
+          saveArr('memoz_shifts', shifts),
+          saveArr('memoz_personal', personals),
+          saveArr('memoz_ent', ents)
+        ]);
+        restoreStatus.style.color = 'var(--teal)';
+        restoreStatus.textContent = '復元しました。';
+      }catch(e){
+        restoreStatus.style.color = 'var(--red)';
+        restoreStatus.textContent = 'ファイルの読み込みに失敗しました。';
+      }
+    };
+    restoreCard.appendChild(label);
+    restoreCard.appendChild(fileInput);
+    restoreCard.appendChild(restoreStatus);
+    main.appendChild(restoreCard);
+
+    app.appendChild(main);
+  }
+
+  // ---------------- INIT ----------------
+  async function init(){
+    [todos, shifts, personals, ents] = await Promise.all([
+      loadArr('memoz_todos'),
+      loadArr('memoz_shifts'),
+      loadArr('memoz_personal'),
+      loadArr('memoz_ent')
+    ]);
+    render();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
