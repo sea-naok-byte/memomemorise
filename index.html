@@ -25,6 +25,14 @@
     --plum-soft: #EFE4EE;
     --red: #B3503F;
     --green: #4C7A5D;
+    --amber: #C1762E;
+    --amber-soft: #F3E4D0;
+    --sage: #4F7657;
+    --sage-soft: #E2ECE2;
+    --coral: #B5566B;
+    --coral-soft: #F3E1E6;
+    --blue: #3E6B8C;
+    --blue-soft: #E1EAF0;
     --shadow: 0 2px 10px rgba(43,41,36,0.06);
   }
   *{box-sizing:border-box;}
@@ -211,6 +219,7 @@
   /* ---- bottom nav ---- */
   .bottom-nav{
     display:flex;
+    flex-direction:column;
     gap:8px;
     padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px)) 16px;
     background:var(--card);
@@ -218,6 +227,7 @@
     position:relative;
     flex-shrink:0;
   }
+  .nav-row{display:flex; gap:8px;}
   .bottom-nav::before{
     content:"";
     position:absolute;
@@ -230,20 +240,25 @@
     background:var(--paper);
     border:1px solid var(--card-border);
     border-radius:14px;
-    padding:10px 6px;
+    padding:9px 4px;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:4px;
+    gap:3px;
     cursor:pointer;
     color:var(--ink);
+    min-width:0;
   }
-  .nav-btn .icon{font-size:20px; line-height:1;}
-  .nav-btn .label{font-size:11px; font-weight:700;}
-  .nav-btn .amount{font-size:12px; font-weight:800;}
+  .nav-btn .icon{font-size:18px; line-height:1;}
+  .nav-btn .label{font-size:10.5px; font-weight:700; white-space:nowrap;}
+  .nav-btn .amount{font-size:11px; font-weight:800; white-space:nowrap;}
   .nav-btn.shift .amount{color:var(--gold);}
   .nav-btn.personal .amount{color:var(--teal);}
   .nav-btn.ent .amount{color:var(--plum);}
+  .nav-btn.calorie .amount{color:var(--amber);}
+  .nav-btn.dish .amount{color:var(--sage);}
+  .nav-btn.want .amount{color:var(--coral);}
+  .nav-btn.place .amount{color:var(--blue);}
   /* ---- month list ---- */
   .month-list{display:flex; flex-direction:column; gap:10px;}
   .month-card{
@@ -274,6 +289,10 @@
   .add-btn.personal{background:var(--teal);}
   .add-btn.shift{background:var(--gold);}
   .add-btn.ent{background:var(--plum);}
+  .add-btn.calorie{background:var(--amber);}
+  .add-btn.dish{background:var(--sage);}
+  .add-btn.want{background:var(--coral);}
+  .add-btn.place{background:var(--blue);}
   .year-btn{
     width:100%;
     padding:12px;
@@ -301,6 +320,8 @@
   }
   .year-chip.active.personal{background:var(--teal); border-color:var(--teal); color:white;}
   .year-chip.active.ent{background:var(--plum); border-color:var(--plum); color:white;}
+  .year-chip.active.shift{background:var(--gold); border-color:var(--gold); color:white;}
+  .year-chip.active.calorie{background:var(--amber); border-color:var(--amber); color:white;}
   .year-month-card{
     background:var(--card);
     border:1px solid var(--card-border);
@@ -386,6 +407,8 @@
   }
   .chip.active.shiftc{background:var(--gold); border-color:var(--gold);}
   .chip.active.entc{background:var(--plum); border-color:var(--plum);}
+  .chip.active.caloriec{background:var(--amber); border-color:var(--amber);}
+  .chip.active.placec{background:var(--blue); border-color:var(--blue); color:white;}
   .stepper{
     display:flex;
     align-items:center;
@@ -482,6 +505,100 @@
   }
   .sign-btn.plus.active{background:var(--green); border-color:var(--green); color:white;}
   .sign-btn.minus.active{background:var(--red); border-color:var(--red); color:white;}
+
+  /* ---- calorie unknown toggle ---- */
+  .unknown-toggle{
+    padding:12px;
+    border-radius:12px;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  .unknown-toggle.active{background:var(--amber-soft); border-color:var(--amber); color:var(--amber);}
+
+  /* ---- dish (cooking record) ---- */
+  .dish-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .dish-card .dish-name{font-size:15px; font-weight:700;}
+  .dish-card .dish-sub{font-size:12px; color:var(--ink-soft); margin-top:3px;}
+  .dish-card .dish-arrow{color:var(--card-border); font-size:18px;}
+  .dish-header-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+  .dish-header-card h2{margin:0 0 8px 0; font-size:19px; font-weight:800;}
+  .dish-link-row{font-size:13px; margin-top:4px; word-break:break-all;}
+  .dish-link-row a{color:var(--sage); text-decoration:underline;}
+  .dish-edit-link{font-size:12px; color:var(--ink-soft); text-decoration:underline; cursor:pointer; margin-top:10px; display:inline-block;}
+  .version-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .version-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .version-badge{
+    background:var(--sage-soft); color:var(--sage);
+    font-size:12px; font-weight:800;
+    padding:3px 10px; border-radius:999px;
+  }
+  .version-date{font-size:12px; color:var(--ink-soft); font-weight:700;}
+  .version-recipe{font-size:13px; color:var(--ink); white-space:pre-wrap; margin-bottom:6px; line-height:1.6;}
+  .version-impression{font-size:12.5px; color:var(--ink-soft); border-top:1px dotted var(--card-border); padding-top:6px; white-space:pre-wrap;}
+  .version-del{border:none; background:transparent; font-size:15px; cursor:pointer; opacity:0.5; padding:2px;}
+
+  /* ---- search / places / wants ---- */
+  .search-input{
+    width:100%;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    border-radius:12px;
+    padding:11px 14px;
+    font-size:14px;
+    font-family:inherit;
+    color:var(--ink);
+    margin-bottom:14px;
+  }
+  .place-card, .want-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .place-card .p-name, .want-card .w-name{font-size:15px; font-weight:700;}
+  .place-card .p-sub, .want-card .w-sub{font-size:12px; color:var(--ink-soft); margin-top:4px; line-height:1.6;}
+  .place-tag{
+    display:inline-block;
+    background:var(--blue-soft); color:var(--blue);
+    font-size:11px; font-weight:700;
+    padding:2px 8px; border-radius:999px;
+    margin:3px 4px 0 0;
+  }
   .loading{padding:40px; text-align:center; color:var(--ink-soft); font-size:13px;}
   ::-webkit-scrollbar{width:0;height:0;}
 </style>
@@ -494,18 +611,25 @@
   const CATS = {
     shiftTypes: ["加須当直","彩の国当直","加須1日","彩の国1日"],
     personalCats: ["ジュース","コンビニ：おやつ","コンビニ：朝","コンビニ：昼","コンビニ：夜","外食：朝","外食：昼","飲み会：一人","飲み会：複数","日本酒/ワイン"],
-    entCats: ["パチスロ","麻雀"]
+    entCats: ["パチスロ","麻雀"],
+    mealTypes: ["朝食","昼食","夕食","おやつ"],
+    placeTags: ["居酒屋","魚","肉","こだわりビール","メキシコ","日本料理","イタリア","おでん","刺身","すし"]
   };
 
   let todos = [];
   let shifts = [];
   let personals = [];
   let ents = [];
+  let calories = [];
+  let dishes = [];
+  let wants = [];
+  let places = [];
 
   let state = { page: 'home' };
 
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
   function yen(n){ return "¥" + Math.round(n).toLocaleString('ja-JP'); }
+  function kcal(n){ return Math.round(n).toLocaleString('ja-JP') + " kcal"; }
   function todayStr(){ const d = new Date(); return d.toISOString().slice(0,10); }
   function monthKeyOf(dateStr){ return dateStr ? dateStr.slice(0,7) : ''; }
   function monthLabel(key){
@@ -599,6 +723,25 @@
     });
     if(state.page === 'entMonth') return renderEntMonth(app);
     if(state.page === 'entForm') return renderEntForm(app);
+    if(state.page === 'calorieList') return renderYearMonthList(app, {
+      title:'摂取カロリー', data:calories, dateKey:'date', catKey:'meal', navClass:'calorie',
+      onMonth:(k)=>go('calorieMonth',{monthKey:k}),
+      onAdd:()=>go('calorieForm',{}),
+      amountOf:(it)=> it.unknown ? 0 : (it.calories||0),
+      formatAmount:kcal,
+      noteOf:(items)=>{ const n = items.filter(i=>i.unknown).length; return n>0 ? '（不明'+n+'件）' : ''; }
+    });
+    if(state.page === 'calorieMonth') return renderCalorieMonth(app);
+    if(state.page === 'calorieForm') return renderCalorieForm(app);
+    if(state.page === 'dishList') return renderDishList(app);
+    if(state.page === 'dishDetail') return renderDishDetail(app);
+    if(state.page === 'dishForm') return renderDishForm(app);
+    if(state.page === 'dishInfoForm') return renderDishInfoForm(app);
+    if(state.page === 'dishVersionForm') return renderDishVersionForm(app);
+    if(state.page === 'wantList') return renderWantList(app);
+    if(state.page === 'wantForm') return renderWantForm(app);
+    if(state.page === 'placeList') return renderPlaceList(app);
+    if(state.page === 'placeForm') return renderPlaceForm(app);
   }
 
   function el(tag, cls, html){
@@ -662,18 +805,26 @@
 
     app.appendChild(main);
 
-    // bottom nav
+    // bottom nav: top row (wish-list style items), bottom row (daily logs)
     const nav = el('div','bottom-nav');
-    nav.appendChild(navBtn('当直メモ','shift', shiftMonthTotal(currentMonthKey()), ()=>go('shiftList',{})));
-    nav.appendChild(navBtn('個人出費','personal', sumMonth(personals,'date','amount',currentMonthKey()), ()=>go('personalList',{})));
-    nav.appendChild(navBtn('娯楽出費','ent', entMonthTotal(currentMonthKey()), ()=>go('entList',{})));
+    const rowTop = el('div','nav-row');
+    rowTop.appendChild(navBtn('欲しいもの','want', wants.length + '件', ()=>go('wantList',{})));
+    rowTop.appendChild(navBtn('行きたい店','place', places.length + '件', ()=>go('placeList',{})));
+    rowTop.appendChild(navBtn('料理記録','dish', dishes.length + '品', ()=>go('dishList',{})));
+    const rowBottom = el('div','nav-row');
+    rowBottom.appendChild(navBtn('当直メモ','shift', yen(shiftMonthTotal(currentMonthKey())), ()=>go('shiftList',{})));
+    rowBottom.appendChild(navBtn('個人出費','personal', yen(sumMonth(personals,'date','amount',currentMonthKey())), ()=>go('personalList',{})));
+    rowBottom.appendChild(navBtn('摂取カロリー','calorie', kcal(calorieMonthTotal(currentMonthKey())), ()=>go('calorieList',{})));
+    rowBottom.appendChild(navBtn('娯楽出費','ent', entMonthTotalStr(currentMonthKey()), ()=>go('entList',{})));
+    nav.appendChild(rowTop);
+    nav.appendChild(rowBottom);
     app.appendChild(nav);
   }
 
-  function navBtn(label, cls, amount, onClick){
+  function navBtn(label, cls, valueText, onClick){
     const btn = el('div','nav-btn ' + cls);
-    const icons = {shift:'🏥', personal:'👛', ent:'🎲'};
-    btn.innerHTML = '<div class="icon">'+icons[cls]+'</div><div class="label">'+label+'</div><div class="amount">'+yen(amount)+'</div>';
+    const icons = {shift:'🏥', personal:'👛', ent:'🎲', calorie:'🍚', dish:'🍳', want:'🛍', place:'🏮'};
+    btn.innerHTML = '<div class="icon">'+icons[cls]+'</div><div class="label">'+label+'</div><div class="amount">'+valueText+'</div>';
     btn.onclick = onClick;
     return btn;
   }
@@ -687,6 +838,13 @@
   }
   function entMonthTotal(monthKey){
     return ents.filter(i=>monthKeyOf(i.date)===monthKey).reduce((s,i)=>s + (i.sign==='minus'?-i.amount:i.amount),0);
+  }
+  function entMonthTotalStr(monthKey){
+    const t = entMonthTotal(monthKey);
+    return (t<0?'−':'+') + yen(Math.abs(t));
+  }
+  function calorieMonthTotal(monthKey){
+    return calories.filter(i=>monthKeyOf(i.date)===monthKey && !i.unknown).reduce((s,i)=>s+(i.calories||0),0);
   }
 
   function isDeadlineSoon(deadline){
@@ -772,6 +930,7 @@
   // ---------- generic month list page ----------
   // ---------- unified list page: add button + year tabs + per-month breakdown ----------
   function renderYearMonthList(app, cfg){
+    const fmt = cfg.formatAmount || yen;
     subHeader(app, cfg.title, ()=>go('home',{}));
     const main = el('div','main');
     const addBtn = el('button','add-btn ' + cfg.navClass, '＋ 新規登録');
@@ -798,7 +957,8 @@
 
     const yearItems = cfg.data.filter(i=> (i[cfg.dateKey]||'').slice(0,4) === year);
     const yearTotal = yearItems.reduce((s,it)=>s+cfg.amountOf(it),0);
-    main.appendChild(el('div','amount-preview','<div class="num" style="color:'+(yearTotal<0?'var(--red)':'var(--ink)')+'">'+yen(yearTotal)+'</div><div class="cap">'+year+'年 合計</div>'));
+    const yearNote = cfg.noteOf ? cfg.noteOf(yearItems) : '';
+    main.appendChild(el('div','amount-preview','<div class="num" style="color:'+(yearTotal<0?'var(--red)':'var(--ink)')+'">'+fmt(yearTotal)+'</div><div class="cap">'+year+'年 合計'+(yearNote?'　'+yearNote:'')+'</div>'));
 
     const byMonth = {};
     yearItems.forEach(it=>{
@@ -815,21 +975,26 @@
         const items = byMonth[mk];
         const monthKey = year + '-' + mk;
         const total = items.reduce((s,it)=>s+cfg.amountOf(it),0);
+        const monthNote = cfg.noteOf ? cfg.noteOf(items) : '';
         const card = el('div','year-month-card');
         card.onclick = ()=> cfg.onMonth(monthKey);
         const head = el('div','year-month-head');
-        head.innerHTML = '<span class="m-label">'+parseInt(mk,10)+'月</span><span class="m-total" style="color:'+(total<0?'var(--red)':'var(--ink)')+'">'+(total<0?'−':'')+yen(Math.abs(total))+'</span>';
+        head.innerHTML = '<span class="m-label">'+parseInt(mk,10)+'月'+(monthNote?' <span style="font-size:11px;font-weight:600;color:var(--ink-soft);">'+monthNote+'</span>':'')+'</span><span class="m-total" style="color:'+(total<0?'var(--red)':'var(--ink)')+'">'+(total<0?'−':'')+fmt(Math.abs(total))+'</span>';
         card.appendChild(head);
 
         const byCat = {};
+        const byCatItems = {};
         items.forEach(it=>{
           const c = it[cfg.catKey];
           byCat[c] = (byCat[c]||0) + cfg.amountOf(it);
+          if(!byCatItems[c]) byCatItems[c] = [];
+          byCatItems[c].push(it);
         });
         Object.keys(byCat).sort((a,b)=>Math.abs(byCat[b])-Math.abs(byCat[a])).forEach(c=>{
           const amt = byCat[c];
+          const note = cfg.noteOf ? cfg.noteOf(byCatItems[c]) : '';
           const row = el('div','breakdown-row');
-          row.innerHTML = '<span>'+c+'</span><span style="color:'+(amt<0?'var(--red)':'var(--ink)')+'">'+(amt<0?'−':'')+yen(Math.abs(amt))+'</span>';
+          row.innerHTML = '<span>'+c+(note?' <span style="opacity:0.75;">'+note+'</span>':'')+'</span><span style="color:'+(amt<0?'var(--red)':'var(--ink)')+'">'+(amt<0?'−':'')+fmt(Math.abs(amt))+'</span>';
           card.appendChild(row);
         });
         main.appendChild(card);
@@ -1193,6 +1358,623 @@
     app.appendChild(main);
   }
 
+  // ---------- CALORIE ----------
+  function renderCalorieMonth(app){
+    const key = state.monthKey;
+    subHeader(app, monthLabel(key) + '・摂取カロリー', ()=>go('calorieList',{}));
+    const main = el('div','main');
+    const items = calories.filter(i=>monthKeyOf(i.date)===key).sort((a,b)=>b.date.localeCompare(a.date));
+    const known = items.filter(i=>!i.unknown).reduce((s,i)=>s+(i.calories||0),0);
+    const unknownCount = items.filter(i=>i.unknown).length;
+    main.appendChild(el('div','amount-preview','<div class="num">'+kcal(known)+'</div><div class="cap">今月の合計'+(unknownCount>0?'（不明'+unknownCount+'件を除く）':'')+'</div>'));
+    items.forEach(it=>{
+      const card = el('div','entry-card');
+      const commentHtml = it.comment ? '<div class="entry-comment">'+escapeHtml(it.comment)+'</div>' : '';
+      const left = el('div','entry-left');
+      left.innerHTML = '<div class="entry-date">'+fmtDate(it.date)+'</div><div class="entry-type">'+it.meal+'</div>'+commentHtml;
+      const right = el('div','entry-right');
+      const amountEl = el('div','entry-amount', it.unknown ? '不明' : kcal(it.calories||0));
+      if(it.unknown) amountEl.style.color = 'var(--ink-soft)';
+      const delBtn = el('button','entry-del','🗑');
+      delBtn.onclick = async (ev)=>{
+        ev.stopPropagation();
+        if(confirm('この記録を削除しますか？')){
+          calories = calories.filter(c=>c.id!==it.id);
+          await saveArr('memoz_calories', calories);
+          render();
+        }
+      };
+      right.appendChild(amountEl);
+      right.appendChild(delBtn);
+      card.appendChild(left);
+      card.appendChild(right);
+      card.onclick = ()=> renderCalorieFormFull(app, it, it.date, it.meal, it.unknown?'':String(it.calories||''), !!it.unknown, key, it.comment||'');
+      main.appendChild(card);
+    });
+    app.appendChild(main);
+  }
+
+  function renderCalorieForm(app){
+    renderCalorieFormFull(app, null, todayStr(), CATS.mealTypes[0], '', false, null, '');
+  }
+
+  function renderCalorieFormFull(app, editing, dateVal, meal, calVal, unknown, monthKey, commentVal){
+    app.innerHTML='';
+    subHeader(app, editing?'摂取カロリーの編集':'摂取カロリーの新規登録', ()=> editing ? go('calorieMonth',{monthKey}) : go('calorieList',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','日付'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = dateVal;
+    dateInput.onchange = ()=> renderCalorieFormFull(app, editing, dateInput.value, meal, calInput.value, unknown, monthKey, commentInput.value);
+    g1.appendChild(dateInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','項目'));
+    const chipRow = el('div','chip-row');
+    CATS.mealTypes.forEach(m=>{
+      const chip = el('div','chip caloriec' + (m===meal?' active':''), m);
+      chip.onclick = ()=> renderCalorieFormFull(app, editing, dateInput.value, m, calInput.value, unknown, monthKey, commentInput.value);
+      chipRow.appendChild(chip);
+    });
+    g2.appendChild(chipRow);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','カロリー（kcal）'));
+    const calInput = el('input'); calInput.type='text'; calInput.inputMode='numeric';
+    calInput.value = calVal;
+    calInput.placeholder = '例：650';
+    calInput.disabled = unknown;
+    if(unknown) calInput.style.opacity = '0.5';
+    g3.appendChild(calInput);
+    const unknownBtn = el('div','unknown-toggle' + (unknown?' active':''), unknown ? '✓ カロリー不明' : 'カロリーが分からない場合はこちら');
+    unknownBtn.style.marginTop = '8px';
+    unknownBtn.onclick = ()=> renderCalorieFormFull(app, editing, dateInput.value, meal, calInput.value, !unknown, monthKey, commentInput.value);
+    g3.appendChild(unknownBtn);
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','コメント（任意）'));
+    const commentInput = el('textarea');
+    commentInput.value = commentVal || '';
+    commentInput.placeholder = '食べたものなどメモできます';
+    g4.appendChild(commentInput);
+    main.appendChild(g4);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'登録する');
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      let calVal2 = null;
+      if(!unknown){
+        calVal2 = parseInt((calInput.value||'').replace(/[^0-9]/g,''),10);
+        if(!dateInput.value || isNaN(calVal2)){ alert('日付とカロリーを入力するか、「カロリー不明」を選んでください'); return; }
+      } else {
+        if(!dateInput.value){ alert('日付を入力してください'); return; }
+      }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const comment = commentInput.value;
+      if(editing){
+        editing.date = dateInput.value; editing.meal = meal; editing.unknown = unknown; editing.calories = unknown ? null : calVal2; editing.comment = comment;
+      } else {
+        calories.push({id:uid(), date: dateInput.value, meal, unknown, calories: unknown ? null : calVal2, comment});
+      }
+      await saveArr('memoz_calories', calories);
+      go('calorieList',{});
+    };
+    main.appendChild(saveBtn);
+
+    if(editing){
+      const delBtn = el('button','delete-btn','削除する');
+      delBtn.onclick = async ()=>{
+        if(confirm('この記録を削除しますか？')){
+          calories = calories.filter(c=>c.id!==editing.id);
+          await saveArr('memoz_calories', calories);
+          go('calorieList',{});
+        }
+      };
+      main.appendChild(delBtn);
+    }
+    app.appendChild(main);
+  }
+
+  // ---------- DISH (cooking records with versioned recipes) ----------
+  function renderDishList(app){
+    subHeader(app, '料理記録', ()=>go('home',{}));
+    const main = el('div','main');
+    const addBtn = el('button','add-btn dish','＋ 新しい料理を登録');
+    addBtn.onclick = ()=> go('dishForm',{});
+    main.appendChild(addBtn);
+
+    if(dishes.length===0){
+      main.appendChild(el('div','empty-state','まだ料理が登録されていません。＋から追加しましょう。'));
+      app.appendChild(main);
+      return;
+    }
+    const sorted = [...dishes].sort((a,b)=> (b.updatedAt||'').localeCompare(a.updatedAt||''));
+    sorted.forEach(d=>{
+      const card = el('div','dish-card');
+      const latest = d.versions[d.versions.length-1];
+      card.innerHTML = '<div><div class="dish-name">'+escapeHtml(d.name)+'</div><div class="dish-sub">第'+latest.version+'版・'+(latest.dateCooked?fmtDate(latest.dateCooked):'日付未記入')+'</div></div><div class="dish-arrow">›</div>';
+      card.onclick = ()=> go('dishDetail',{dishId:d.id});
+      main.appendChild(card);
+    });
+    app.appendChild(main);
+  }
+
+  function renderDishDetail(app){
+    const dish = dishes.find(d=>d.id===state.dishId);
+    if(!dish){ go('dishList',{}); return; }
+    subHeader(app, dish.name, ()=>go('dishList',{}));
+    const main = el('div','main');
+
+    const head = el('div','dish-header-card');
+    let linksHtml = '';
+    (dish.links||[]).forEach(url=>{
+      linksHtml += '<div class="dish-link-row">🔗 <a href="'+escapeHtml(url)+'" target="_blank" rel="noopener">'+escapeHtml(url)+'</a></div>';
+    });
+    head.innerHTML = '<h2>'+escapeHtml(dish.name)+'</h2>' + linksHtml;
+    const editLink = el('span','dish-edit-link','✎ 料理名・参考リンクを編集');
+    editLink.onclick = ()=> go('dishInfoForm',{dishId:dish.id});
+    head.appendChild(editLink);
+    main.appendChild(head);
+
+    const addVerBtn = el('button','add-btn dish','＋ 新しいバージョンを追加');
+    addVerBtn.onclick = ()=> go('dishVersionForm',{dishId:dish.id});
+    main.appendChild(addVerBtn);
+
+    const versions = [...dish.versions].sort((a,b)=>b.version-a.version);
+    versions.forEach(v=>{
+      const card = el('div','version-card');
+      const headRow = el('div','version-head');
+      headRow.innerHTML = '<span class="version-badge">第'+v.version+'版</span><span class="version-date">'+(v.dateCooked?fmtDate(v.dateCooked):'日付未記入')+'</span>';
+      const delBtn = el('button','version-del','🗑');
+      delBtn.onclick = async (ev)=>{
+        ev.stopPropagation();
+        if(dish.versions.length<=1){ alert('最後の1件は削除できません。料理ごと削除する場合は下の「料理を削除」をお使いください。'); return; }
+        if(confirm('第'+v.version+'版を削除しますか？')){
+          dish.versions = dish.versions.filter(x=>x.id!==v.id);
+          await saveArr('memoz_dishes', dishes);
+          render();
+        }
+      };
+      headRow.appendChild(delBtn);
+      card.appendChild(headRow);
+      if(v.recipe) card.appendChild(el('div','version-recipe', escapeHtml(v.recipe)));
+      if(v.impression) card.appendChild(el('div','version-impression', '💬 '+escapeHtml(v.impression)));
+      card.onclick = ()=> go('dishVersionForm',{dishId:dish.id, versionId:v.id});
+      main.appendChild(card);
+    });
+
+    const delDishBtn = el('button','delete-btn','この料理をすべて削除する');
+    delDishBtn.onclick = async ()=>{
+      if(confirm('「'+dish.name+'」を、すべてのバージョンごと削除します。よろしいですか？')){
+        dishes = dishes.filter(d=>d.id!==dish.id);
+        await saveArr('memoz_dishes', dishes);
+        go('dishList',{});
+      }
+    };
+    main.appendChild(delDishBtn);
+
+    app.appendChild(main);
+  }
+
+  function renderDishForm(app){
+    subHeader(app, '新しい料理を登録', ()=>go('dishList',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','料理名'));
+    const nameInput = el('input'); nameInput.type='text'; nameInput.placeholder='例：豚の生姜焼き';
+    g1.appendChild(nameInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','参考にした動画・HPのURL（任意・1行に1つずつ）'));
+    const linksInput = el('textarea');
+    linksInput.placeholder = 'https://...\nhttps://...';
+    g2.appendChild(linksInput);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','レシピ（第1版）'));
+    const recipeInput = el('textarea');
+    recipeInput.style.minHeight = '140px';
+    recipeInput.placeholder = '材料・作り方など';
+    g3.appendChild(recipeInput);
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','作った日'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = todayStr();
+    g4.appendChild(dateInput);
+    main.appendChild(g4);
+
+    const g5 = el('div','form-group');
+    g5.appendChild(el('label','form-label','感想（任意）'));
+    const impressionInput = el('textarea');
+    impressionInput.placeholder = '味・改善点など';
+    g5.appendChild(impressionInput);
+    main.appendChild(g5);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn dish','登録する');
+    saveBtn.style.background = 'var(--sage)';
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const name = nameInput.value.trim();
+      if(!name){ alert('料理名を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const links = linksInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      const now = new Date().toISOString();
+      dishes.push({
+        id: uid(),
+        name,
+        links,
+        updatedAt: now,
+        versions: [{ id: uid(), version:1, recipe: recipeInput.value, dateCooked: dateInput.value, impression: impressionInput.value }]
+      });
+      await saveArr('memoz_dishes', dishes);
+      go('dishList',{});
+    };
+    main.appendChild(saveBtn);
+    app.appendChild(main);
+  }
+
+  function renderDishInfoForm(app){
+    const dish = dishes.find(d=>d.id===state.dishId);
+    if(!dish){ go('dishList',{}); return; }
+    subHeader(app, '料理名・リンクの編集', ()=>go('dishDetail',{dishId:dish.id}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','料理名'));
+    const nameInput = el('input'); nameInput.type='text'; nameInput.value = dish.name;
+    g1.appendChild(nameInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','参考にした動画・HPのURL（任意・1行に1つずつ）'));
+    const linksInput = el('textarea');
+    linksInput.value = (dish.links||[]).join('\n');
+    g2.appendChild(linksInput);
+    main.appendChild(g2);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn','更新する');
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const name = nameInput.value.trim();
+      if(!name){ alert('料理名を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      dish.name = name;
+      dish.links = linksInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      await saveArr('memoz_dishes', dishes);
+      go('dishDetail',{dishId:dish.id});
+    };
+    main.appendChild(saveBtn);
+    app.appendChild(main);
+  }
+
+  function renderDishVersionForm(app){
+    const dish = dishes.find(d=>d.id===state.dishId);
+    if(!dish){ go('dishList',{}); return; }
+    const editing = state.versionId ? dish.versions.find(v=>v.id===state.versionId) : null;
+    subHeader(app, editing ? '第'+editing.version+'版の編集' : '新しいバージョンを追加', ()=>go('dishDetail',{dishId:dish.id}));
+    const main = el('div','main');
+
+    const nextVersion = editing ? editing.version : (Math.max(0,...dish.versions.map(v=>v.version)) + 1);
+    main.appendChild(el('div','amount-preview','<div class="num" style="font-size:20px;">第'+nextVersion+'版</div>'));
+
+    const latest = dish.versions[dish.versions.length-1];
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','レシピ'));
+    const recipeInput = el('textarea');
+    recipeInput.style.minHeight = '140px';
+    recipeInput.value = editing ? (editing.recipe||'') : (latest ? latest.recipe||'' : '');
+    g1.appendChild(recipeInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','作った日'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing ? (editing.dateCooked||todayStr()) : todayStr();
+    g2.appendChild(dateInput);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','感想（任意）'));
+    const impressionInput = el('textarea');
+    impressionInput.value = editing ? (editing.impression||'') : '';
+    impressionInput.placeholder = '味・改善点など';
+    g3.appendChild(impressionInput);
+    main.appendChild(g3);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'このバージョンを保存');
+    saveBtn.style.background = 'var(--sage)';
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      dish.updatedAt = new Date().toISOString();
+      if(editing){
+        editing.recipe = recipeInput.value; editing.dateCooked = dateInput.value; editing.impression = impressionInput.value;
+      } else {
+        dish.versions.push({ id: uid(), version: nextVersion, recipe: recipeInput.value, dateCooked: dateInput.value, impression: impressionInput.value });
+      }
+      await saveArr('memoz_dishes', dishes);
+      go('dishDetail',{dishId:dish.id});
+    };
+    main.appendChild(saveBtn);
+    app.appendChild(main);
+  }
+
+  // ---------- PLACES (行きたい店) ----------
+  function renderPlaceList(app){
+    subHeader(app, '行きたい店', ()=>go('home',{}));
+    const main = el('div','main');
+    const addBtn = el('button','add-btn place','＋ 行きたい店を追加');
+    addBtn.onclick = ()=> go('placeForm',{});
+    main.appendChild(addBtn);
+
+    const searchInput = el('input'); searchInput.type='text'; searchInput.className='search-input';
+    searchInput.placeholder = '店名・系統・住所・コメントで検索';
+    main.appendChild(searchInput);
+
+    if(places.length===0){
+      main.appendChild(el('div','empty-state','まだ登録されていません。＋から追加しましょう。'));
+      app.appendChild(main);
+      return;
+    }
+
+    const listWrap = el('div');
+    main.appendChild(listWrap);
+    const cardEntries = [];
+
+    const sorted = [...places].sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    sorted.forEach(p=>{
+      const card = el('div','place-card');
+      const tagsHtml = (p.tags||[]).map(t=>'<span class="place-tag">'+escapeHtml(t)+'</span>').join('');
+      const addressHtml = p.address ? '<div>📍 '+escapeHtml(p.address)+'</div>' : '';
+      const commentHtml = p.comment ? '<div>💬 '+escapeHtml(p.comment)+'</div>' : '';
+      card.innerHTML = '<div class="p-name">'+escapeHtml(p.name)+'</div><div class="p-sub">'+(p.date?fmtDate(p.date)+'　':'')+tagsHtml+addressHtml+commentHtml+'</div>';
+      card.onclick = ()=> go('placeForm', {editId:p.id});
+      listWrap.appendChild(card);
+      const searchText = [p.name, (p.tags||[]).join(' '), p.address, p.comment, (p.urls||[]).join(' ')].filter(Boolean).join(' ').toLowerCase();
+      cardEntries.push({el:card, text:searchText});
+    });
+
+    searchInput.oninput = ()=>{
+      const q = searchInput.value.trim().toLowerCase();
+      cardEntries.forEach(c=>{ c.el.style.display = (!q || c.text.includes(q)) ? '' : 'none'; });
+    };
+
+    app.appendChild(main);
+  }
+
+  function renderPlaceForm(app){
+    const editing = state.editId ? places.find(p=>p.id===state.editId) : null;
+    subHeader(app, editing?'行きたい店の編集':'行きたい店を追加', ()=>go('placeList',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','店名'));
+    const nameInput = el('input'); nameInput.type='text'; nameInput.value = editing?editing.name:''; nameInput.placeholder='例：〇〇食堂';
+    g1.appendChild(nameInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','日付'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing?(editing.date||todayStr()):todayStr();
+    g2.appendChild(dateInput);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','系統（複数選択可）'));
+    const chipRow = el('div','chip-row');
+    let selectedTags = editing ? [...(editing.tags||[])] : [];
+    CATS.placeTags.forEach(t=>{
+      const chip = el('div','chip placec' + (selectedTags.includes(t)?' active':''), t);
+      chip.onclick = ()=>{
+        if(selectedTags.includes(t)) selectedTags = selectedTags.filter(x=>x!==t);
+        else selectedTags.push(t);
+        chip.classList.toggle('active');
+      };
+      chipRow.appendChild(chip);
+    });
+    g3.appendChild(chipRow);
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','参考にしたHP・動画のURL（任意・1行に1つずつ）'));
+    const urlsInput = el('textarea');
+    urlsInput.value = editing ? (editing.urls||[]).join('\n') : '';
+    urlsInput.placeholder = 'https://...';
+    g4.appendChild(urlsInput);
+    main.appendChild(g4);
+
+    const g5 = el('div','form-group');
+    g5.appendChild(el('label','form-label','住所（任意）'));
+    const addressInput = el('input'); addressInput.type='text'; addressInput.value = editing?(editing.address||''):'';
+    addressInput.placeholder = '例：東京都〇〇区…';
+    g5.appendChild(addressInput);
+    main.appendChild(g5);
+
+    const g6 = el('div','form-group');
+    g6.appendChild(el('label','form-label','コメント（任意）'));
+    const commentInput = el('textarea');
+    commentInput.value = editing?(editing.comment||''):'';
+    commentInput.placeholder = '気になるポイントなど';
+    g6.appendChild(commentInput);
+    main.appendChild(g6);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'登録する');
+    saveBtn.style.background = 'var(--blue)';
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const name = nameInput.value.trim();
+      if(!name){ alert('店名を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const urls = urlsInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      if(editing){
+        editing.name = name; editing.date = dateInput.value; editing.tags = selectedTags; editing.urls = urls; editing.address = addressInput.value; editing.comment = commentInput.value;
+      } else {
+        places.push({id:uid(), name, date:dateInput.value, tags:selectedTags, urls, address:addressInput.value, comment:commentInput.value});
+      }
+      await saveArr('memoz_places', places);
+      go('placeList',{});
+    };
+    main.appendChild(saveBtn);
+
+    if(editing){
+      const delBtn = el('button','delete-btn','削除する');
+      delBtn.onclick = async ()=>{
+        if(confirm('この記録を削除しますか？')){
+          places = places.filter(p=>p.id!==editing.id);
+          await saveArr('memoz_places', places);
+          go('placeList',{});
+        }
+      };
+      main.appendChild(delBtn);
+    }
+    app.appendChild(main);
+  }
+
+  // ---------- WANTS (欲しいもの) ----------
+  function renderWantList(app){
+    subHeader(app, '欲しいもの', ()=>go('home',{}));
+    const main = el('div','main');
+    const addBtn = el('button','add-btn want','＋ 欲しいものを追加');
+    addBtn.onclick = ()=> go('wantForm',{});
+    main.appendChild(addBtn);
+
+    const searchInput = el('input'); searchInput.type='text'; searchInput.className='search-input';
+    searchInput.placeholder = 'もの・製品名・コメントで検索';
+    main.appendChild(searchInput);
+
+    if(wants.length===0){
+      main.appendChild(el('div','empty-state','まだ登録されていません。＋から追加しましょう。'));
+      app.appendChild(main);
+      return;
+    }
+
+    const listWrap = el('div');
+    main.appendChild(listWrap);
+    const cardEntries = [];
+
+    const sorted = [...wants].sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    sorted.forEach(w=>{
+      const card = el('div','want-card');
+      const commentHtml = w.comment ? '<div>💬 '+escapeHtml(w.comment)+'</div>' : '';
+      card.innerHTML = '<div class="w-name">'+escapeHtml(w.item)+(w.product?'　'+escapeHtml(w.product):'')+'</div><div class="w-sub">'+(w.date?fmtDate(w.date):'')+commentHtml+'</div>';
+      card.onclick = ()=> go('wantForm', {editId:w.id});
+      listWrap.appendChild(card);
+      const searchText = [w.item, w.product, w.comment, (w.refUrls||[]).join(' '), (w.shopUrls||[]).join(' ')].filter(Boolean).join(' ').toLowerCase();
+      cardEntries.push({el:card, text:searchText});
+    });
+
+    searchInput.oninput = ()=>{
+      const q = searchInput.value.trim().toLowerCase();
+      cardEntries.forEach(c=>{ c.el.style.display = (!q || c.text.includes(q)) ? '' : 'none'; });
+    };
+
+    app.appendChild(main);
+  }
+
+  function renderWantForm(app){
+    const editing = state.editId ? wants.find(w=>w.id===state.editId) : null;
+    subHeader(app, editing?'欲しいものの編集':'欲しいものを追加', ()=>go('wantList',{}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','もの'));
+    const itemInput = el('input'); itemInput.type='text'; itemInput.value = editing?editing.item:''; itemInput.placeholder='例：掃除機';
+    g1.appendChild(itemInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','具体的な製品名（任意）'));
+    const productInput = el('input'); productInput.type='text'; productInput.value = editing?(editing.product||''):''; productInput.placeholder='例：ダイソン V15';
+    g2.appendChild(productInput);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','日付'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing?(editing.date||todayStr()):todayStr();
+    g3.appendChild(dateInput);
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','参考にしたURL（任意・1行に1つずつ）'));
+    const refInput = el('textarea');
+    refInput.value = editing?(editing.refUrls||[]).join('\n'):'';
+    refInput.placeholder = 'https://...';
+    g4.appendChild(refInput);
+    main.appendChild(g4);
+
+    const g5 = el('div','form-group');
+    g5.appendChild(el('label','form-label','店・商品のURL（任意・1行に1つずつ）'));
+    const shopInput = el('textarea');
+    shopInput.value = editing?(editing.shopUrls||[]).join('\n'):'';
+    shopInput.placeholder = 'https://...';
+    g5.appendChild(shopInput);
+    main.appendChild(g5);
+
+    const g6 = el('div','form-group');
+    g6.appendChild(el('label','form-label','コメント（任意）'));
+    const commentInput = el('textarea');
+    commentInput.value = editing?(editing.comment||''):'';
+    g6.appendChild(commentInput);
+    main.appendChild(g6);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'登録する');
+    saveBtn.style.background = 'var(--coral)';
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const item = itemInput.value.trim();
+      if(!item){ alert('「もの」を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const refUrls = refInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      const shopUrls = shopInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      if(editing){
+        editing.item = item; editing.product = productInput.value; editing.date = dateInput.value; editing.refUrls = refUrls; editing.shopUrls = shopUrls; editing.comment = commentInput.value;
+      } else {
+        wants.push({id:uid(), item, product:productInput.value, date:dateInput.value, refUrls, shopUrls, comment:commentInput.value});
+      }
+      await saveArr('memoz_wants', wants);
+      go('wantList',{});
+    };
+    main.appendChild(saveBtn);
+
+    if(editing){
+      const delBtn = el('button','delete-btn','削除する');
+      delBtn.onclick = async ()=>{
+        if(confirm('この記録を削除しますか？')){
+          wants = wants.filter(w=>w.id!==editing.id);
+          await saveArr('memoz_wants', wants);
+          go('wantList',{});
+        }
+      };
+      main.appendChild(delBtn);
+    }
+    app.appendChild(main);
+  }
+
   // ---------- SETTINGS / BACKUP ----------
   function renderSettings(app){
     subHeader(app, '設定・バックアップ', ()=>go('home',{}));
@@ -1210,7 +1992,7 @@
       const payload = {
         exportedAt: new Date().toISOString(),
         app: 'めもーず',
-        todos, shifts, personals, ents
+        todos, shifts, personals, ents, calories, dishes, wants, places
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
@@ -1246,7 +2028,7 @@
       try{
         const text = await file.text();
         const data = JSON.parse(text);
-        if(!data || (!data.todos && !data.shifts && !data.personals && !data.ents)){
+        if(!data || (!data.todos && !data.shifts && !data.personals && !data.ents && !data.calories && !data.dishes && !data.wants && !data.places)){
           restoreStatus.style.color = 'var(--red)';
           restoreStatus.textContent = 'このファイルは「めもーず」のバックアップ形式ではないようです。';
           return;
@@ -1256,11 +2038,19 @@
         shifts = data.shifts || [];
         personals = data.personals || [];
         ents = data.ents || [];
+        calories = data.calories || [];
+        dishes = data.dishes || [];
+        wants = data.wants || [];
+        places = data.places || [];
         await Promise.all([
           saveArr('memoz_todos', todos),
           saveArr('memoz_shifts', shifts),
           saveArr('memoz_personal', personals),
-          saveArr('memoz_ent', ents)
+          saveArr('memoz_ent', ents),
+          saveArr('memoz_calories', calories),
+          saveArr('memoz_dishes', dishes),
+          saveArr('memoz_wants', wants),
+          saveArr('memoz_places', places)
         ]);
         restoreStatus.style.color = 'var(--teal)';
         restoreStatus.textContent = '復元しました。';
@@ -1279,11 +2069,15 @@
 
   // ---------------- INIT ----------------
   async function init(){
-    [todos, shifts, personals, ents] = await Promise.all([
+    [todos, shifts, personals, ents, calories, dishes, wants, places] = await Promise.all([
       loadArr('memoz_todos'),
       loadArr('memoz_shifts'),
       loadArr('memoz_personal'),
-      loadArr('memoz_ent')
+      loadArr('memoz_ent'),
+      loadArr('memoz_calories'),
+      loadArr('memoz_dishes'),
+      loadArr('memoz_wants'),
+      loadArr('memoz_places')
     ]);
     render();
   }
