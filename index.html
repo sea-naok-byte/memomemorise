@@ -599,6 +599,16 @@
     padding:2px 8px; border-radius:999px;
     margin:3px 4px 0 0;
   }
+  .status-badge{
+    display:inline-block;
+    font-size:10.5px; font-weight:800;
+    padding:2px 8px; border-radius:999px;
+    background:var(--amber-soft); color:var(--amber);
+    vertical-align:middle;
+  }
+  .status-badge.done{background:var(--sage-soft); color:var(--sage);}
+  .want-link-row{font-size:12px; margin-top:3px; word-break:break-all;}
+  .want-link-row a{color:var(--coral); text-decoration:underline;}
   .loading{padding:40px; text-align:center; color:var(--ink-soft); font-size:13px;}
   ::-webkit-scrollbar{width:0;height:0;}
 </style>
@@ -689,7 +699,21 @@
 
   function go(page, params){
     state = Object.assign({page}, params||{});
+    try{ history.pushState(state, '', '#'+page); }catch(e){}
     render();
+  }
+
+  // helpers for clickable phone / address / urls
+  function telLink(phone){
+    if(!phone) return '';
+    return '<a href="tel:'+escapeHtml(phone.replace(/[^0-9+]/g,''))+'">📞 '+escapeHtml(phone)+'</a>';
+  }
+  function mapsLink(address){
+    if(!address) return '';
+    return '<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(address)+'" target="_blank" rel="noopener">📍 '+escapeHtml(address)+'</a>';
+  }
+  function urlLinksHtml(urls, cls){
+    return (urls||[]).map(u=>'<div class="'+(cls||'dish-link-row')+'">🔗 <a href="'+escapeHtml(u)+'" target="_blank" rel="noopener">'+escapeHtml(u)+'</a></div>').join('');
   }
 
   // ---------------- RENDER ----------------
@@ -741,7 +765,10 @@
     if(state.page === 'wantList') return renderWantList(app);
     if(state.page === 'wantForm') return renderWantForm(app);
     if(state.page === 'placeList') return renderPlaceList(app);
+    if(state.page === 'placeDetail') return renderPlaceDetail(app);
     if(state.page === 'placeForm') return renderPlaceForm(app);
+    if(state.page === 'placeInfoForm') return renderPlaceInfoForm(app);
+    if(state.page === 'placeVisitForm') return renderPlaceVisitForm(app);
   }
 
   function el(tag, cls, html){
@@ -1498,8 +1525,15 @@
     const sorted = [...dishes].sort((a,b)=> (b.updatedAt||'').localeCompare(a.updatedAt||''));
     sorted.forEach(d=>{
       const card = el('div','dish-card');
-      const latest = d.versions[d.versions.length-1];
-      card.innerHTML = '<div><div class="dish-name">'+escapeHtml(d.name)+'</div><div class="dish-sub">第'+latest.version+'版・'+(latest.dateCooked?fmtDate(latest.dateCooked):'日付未記入')+'</div></div><div class="dish-arrow">›</div>';
+      const latest = d.versions.length ? d.versions[d.versions.length-1] : null;
+      let sub;
+      if(!latest){
+        sub = '<span class="status-badge">未調理</span>';
+      } else {
+        const dateLabel = latest.planned ? '予定' : (latest.dateCooked?fmtDate(latest.dateCooked):'日付未定');
+        sub = '第'+latest.version+'版・'+dateLabel;
+      }
+      card.innerHTML = '<div><div class="dish-name">'+escapeHtml(d.name)+'</div><div class="dish-sub">'+sub+'</div></div><div class="dish-arrow">›</div>';
       card.onclick = ()=> go('dishDetail',{dishId:d.id});
       main.appendChild(card);
     });
@@ -1513,12 +1547,11 @@
     const main = el('div','main');
 
     const head = el('div','dish-header-card');
-    let linksHtml = '';
-    (dish.links||[]).forEach(url=>{
-      linksHtml += '<div class="dish-link-row">🔗 <a href="'+escapeHtml(url)+'" target="_blank" rel="noopener">'+escapeHtml(url)+'</a></div>';
-    });
-    head.innerHTML = '<h2>'+escapeHtml(dish.name)+'</h2>' + linksHtml;
-    const editLink = el('span','dish-edit-link','✎ 料理名・参考リンクを編集');
+    let html = '<h2>'+escapeHtml(dish.name)+(dish.versions.length===0?' <span class="status-badge">未調理</span>':'')+'</h2>';
+    html += urlLinksHtml(dish.links);
+    if(dish.comment) html += '<div style="margin-top:8px; font-size:13px; color:var(--ink-soft);">💬 '+escapeHtml(dish.comment)+'</div>';
+    head.innerHTML = html;
+    const editLink = el('span','dish-edit-link','✎ 料理名・参考リンク・コメントを編集');
     editLink.onclick = ()=> go('dishInfoForm',{dishId:dish.id});
     head.appendChild(editLink);
     main.appendChild(head);
@@ -1527,15 +1560,18 @@
     addVerBtn.onclick = ()=> go('dishVersionForm',{dishId:dish.id});
     main.appendChild(addVerBtn);
 
+    if(dish.versions.length===0){
+      main.appendChild(el('div','empty-state','まだバージョン（レシピ）が登録されていません。'));
+    }
     const versions = [...dish.versions].sort((a,b)=>b.version-a.version);
     versions.forEach(v=>{
       const card = el('div','version-card');
       const headRow = el('div','version-head');
-      headRow.innerHTML = '<span class="version-badge">第'+v.version+'版</span><span class="version-date">'+(v.dateCooked?fmtDate(v.dateCooked):'日付未記入')+'</span>';
+      const dateLabel = v.planned ? '予定' : (v.dateCooked?fmtDate(v.dateCooked):'日付未定');
+      headRow.innerHTML = '<span class="version-badge">第'+v.version+'版'+(v.planned?'・予定':'')+'</span><span class="version-date">'+(v.planned?'':dateLabel)+'</span>';
       const delBtn = el('button','version-del','🗑');
       delBtn.onclick = async (ev)=>{
         ev.stopPropagation();
-        if(dish.versions.length<=1){ alert('最後の1件は削除できません。料理ごと削除する場合は下の「料理を削除」をお使いください。'); return; }
         if(confirm('第'+v.version+'版を削除しますか？')){
           dish.versions = dish.versions.filter(x=>x.id!==v.id);
           await saveArr('memoz_dishes', dishes);
@@ -1544,6 +1580,7 @@
       };
       headRow.appendChild(delBtn);
       card.appendChild(headRow);
+      if(v.ingredients) card.appendChild(el('div','version-recipe', '🧺 '+escapeHtml(v.ingredients)));
       if(v.recipe) card.appendChild(el('div','version-recipe', escapeHtml(v.recipe)));
       if(v.impression) card.appendChild(el('div','version-impression', '💬 '+escapeHtml(v.impression)));
       card.onclick = ()=> go('dishVersionForm',{dishId:dish.id, versionId:v.id});
@@ -1573,6 +1610,12 @@
     g1.appendChild(nameInput);
     main.appendChild(g1);
 
+    const g1b = el('div','form-group');
+    let notMade = false;
+    const notMadeBtn = el('div','unknown-toggle','まだ作っていない');
+    g1b.appendChild(notMadeBtn);
+    main.appendChild(g1b);
+
     const g2 = el('div','form-group');
     g2.appendChild(el('label','form-label','参考にした動画・HPのURL（任意・1行に1つずつ）'));
     const linksInput = el('textarea');
@@ -1580,26 +1623,61 @@
     g2.appendChild(linksInput);
     main.appendChild(g2);
 
+    const g2b = el('div','form-group');
+    g2b.appendChild(el('label','form-label','コメント（任意）'));
+    const dishCommentInput = el('textarea');
+    dishCommentInput.placeholder = 'この料理についてのメモなど';
+    g2b.appendChild(dishCommentInput);
+    main.appendChild(g2b);
+
+    // ---- version-1 fields (hidden when 未調理) ----
+    const versionSection = el('div');
+
+    const g3a = el('div','form-group');
+    g3a.appendChild(el('label','form-label','材料'));
+    const ingredientsInput = el('textarea');
+    ingredientsInput.placeholder = '材料と分量など';
+    g3a.appendChild(ingredientsInput);
+    versionSection.appendChild(g3a);
+
     const g3 = el('div','form-group');
     g3.appendChild(el('label','form-label','レシピ（第1版）'));
     const recipeInput = el('textarea');
     recipeInput.style.minHeight = '140px';
-    recipeInput.placeholder = '材料・作り方など';
+    recipeInput.placeholder = '作り方など';
     g3.appendChild(recipeInput);
-    main.appendChild(g3);
+    versionSection.appendChild(g3);
 
     const g4 = el('div','form-group');
-    g4.appendChild(el('label','form-label','作った日'));
-    const dateInput = el('input'); dateInput.type='date'; dateInput.value = todayStr();
+    g4.appendChild(el('label','form-label','作った日（任意）'));
+    const dateInput = el('input'); dateInput.type='date';
     g4.appendChild(dateInput);
-    main.appendChild(g4);
+    let planned = false;
+    const plannedBtn = el('div','unknown-toggle','予定（まだ作っていないバージョン）');
+    plannedBtn.style.marginTop = '8px';
+    g4.appendChild(plannedBtn);
+    versionSection.appendChild(g4);
 
     const g5 = el('div','form-group');
     g5.appendChild(el('label','form-label','感想（任意）'));
     const impressionInput = el('textarea');
     impressionInput.placeholder = '味・改善点など';
     g5.appendChild(impressionInput);
-    main.appendChild(g5);
+    versionSection.appendChild(g5);
+
+    main.appendChild(versionSection);
+
+    notMadeBtn.onclick = ()=>{
+      notMade = !notMade;
+      notMadeBtn.classList.toggle('active');
+      notMadeBtn.textContent = notMade ? '✓ まだ作っていない' : 'まだ作っていない';
+      versionSection.style.display = notMade ? 'none' : '';
+    };
+    plannedBtn.onclick = ()=>{
+      planned = !planned;
+      plannedBtn.classList.toggle('active');
+      plannedBtn.textContent = planned ? '✓ 予定（まだ作っていないバージョン）' : '予定（まだ作っていないバージョン）';
+    };
 
     let submitted = false;
     const saveBtn = el('button','save-btn dish','登録する');
@@ -1613,13 +1691,15 @@
       saveBtn.style.opacity = '0.6';
       const links = linksInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
       const now = new Date().toISOString();
-      dishes.push({
-        id: uid(),
-        name,
-        links,
-        updatedAt: now,
-        versions: [{ id: uid(), version:1, recipe: recipeInput.value, dateCooked: dateInput.value, impression: impressionInput.value }]
-      });
+      const versions = notMade ? [] : [{
+        id: uid(), version:1,
+        ingredients: ingredientsInput.value,
+        recipe: recipeInput.value,
+        dateCooked: dateInput.value || null,
+        planned,
+        impression: impressionInput.value
+      }];
+      dishes.push({ id: uid(), name, links, comment: dishCommentInput.value, updatedAt: now, versions });
       await saveArr('memoz_dishes', dishes);
       go('dishList',{});
     };
@@ -1646,6 +1726,13 @@
     g2.appendChild(linksInput);
     main.appendChild(g2);
 
+    const g2b = el('div','form-group');
+    g2b.appendChild(el('label','form-label','コメント（任意）'));
+    const dishCommentInput = el('textarea');
+    dishCommentInput.value = dish.comment||'';
+    g2b.appendChild(dishCommentInput);
+    main.appendChild(g2b);
+
     let submitted = false;
     const saveBtn = el('button','save-btn','更新する');
     saveBtn.onclick = async ()=>{
@@ -1657,6 +1744,7 @@
       saveBtn.style.opacity = '0.6';
       dish.name = name;
       dish.links = linksInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      dish.comment = dishCommentInput.value;
       await saveArr('memoz_dishes', dishes);
       go('dishDetail',{dishId:dish.id});
     };
@@ -1675,6 +1763,14 @@
     main.appendChild(el('div','amount-preview','<div class="num" style="font-size:20px;">第'+nextVersion+'版</div>'));
 
     const latest = dish.versions[dish.versions.length-1];
+    const g0 = el('div','form-group');
+    g0.appendChild(el('label','form-label','材料'));
+    const ingredientsInput = el('textarea');
+    ingredientsInput.value = editing ? (editing.ingredients||'') : (latest ? latest.ingredients||'' : '');
+    ingredientsInput.placeholder = '材料と分量など';
+    g0.appendChild(ingredientsInput);
+    main.appendChild(g0);
+
     const g1 = el('div','form-group');
     g1.appendChild(el('label','form-label','レシピ'));
     const recipeInput = el('textarea');
@@ -1684,9 +1780,18 @@
     main.appendChild(g1);
 
     const g2 = el('div','form-group');
-    g2.appendChild(el('label','form-label','作った日'));
-    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing ? (editing.dateCooked||todayStr()) : todayStr();
+    g2.appendChild(el('label','form-label','作った日（任意）'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing ? (editing.dateCooked||'') : '';
     g2.appendChild(dateInput);
+    let planned = editing ? !!editing.planned : false;
+    const plannedBtn = el('div','unknown-toggle' + (planned?' active':''), planned ? '✓ 予定（まだ作っていないバージョン）' : '予定（まだ作っていないバージョン）');
+    plannedBtn.style.marginTop = '8px';
+    plannedBtn.onclick = ()=>{
+      planned = !planned;
+      plannedBtn.classList.toggle('active');
+      plannedBtn.textContent = planned ? '✓ 予定（まだ作っていないバージョン）' : '予定（まだ作っていないバージョン）';
+    };
+    g2.appendChild(plannedBtn);
     main.appendChild(g2);
 
     const g3 = el('div','form-group');
@@ -1707,9 +1812,9 @@
       saveBtn.style.opacity = '0.6';
       dish.updatedAt = new Date().toISOString();
       if(editing){
-        editing.recipe = recipeInput.value; editing.dateCooked = dateInput.value; editing.impression = impressionInput.value;
+        editing.ingredients = ingredientsInput.value; editing.recipe = recipeInput.value; editing.dateCooked = dateInput.value || null; editing.planned = planned; editing.impression = impressionInput.value;
       } else {
-        dish.versions.push({ id: uid(), version: nextVersion, recipe: recipeInput.value, dateCooked: dateInput.value, impression: impressionInput.value });
+        dish.versions.push({ id: uid(), version: nextVersion, ingredients: ingredientsInput.value, recipe: recipeInput.value, dateCooked: dateInput.value || null, planned, impression: impressionInput.value });
       }
       await saveArr('memoz_dishes', dishes);
       go('dishDetail',{dishId:dish.id});
@@ -1727,7 +1832,7 @@
     main.appendChild(addBtn);
 
     const searchInput = el('input'); searchInput.type='text'; searchInput.className='search-input';
-    searchInput.placeholder = '店名・系統・住所・コメントで検索';
+    searchInput.placeholder = '店名・系統・住所・電話・コメントで検索';
     main.appendChild(searchInput);
 
     if(places.length===0){
@@ -1740,16 +1845,17 @@
     main.appendChild(listWrap);
     const cardEntries = [];
 
-    const sorted = [...places].sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    const sorted = [...places].sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
     sorted.forEach(p=>{
       const card = el('div','place-card');
       const tagsHtml = (p.tags||[]).map(t=>'<span class="place-tag">'+escapeHtml(t)+'</span>').join('');
-      const addressHtml = p.address ? '<div>📍 '+escapeHtml(p.address)+'</div>' : '';
-      const commentHtml = p.comment ? '<div>💬 '+escapeHtml(p.comment)+'</div>' : '';
-      card.innerHTML = '<div class="p-name">'+escapeHtml(p.name)+'</div><div class="p-sub">'+(p.date?fmtDate(p.date)+'　':'')+tagsHtml+addressHtml+commentHtml+'</div>';
-      card.onclick = ()=> go('placeForm', {editId:p.id});
+      const badge = p.notVisited ? '<span class="status-badge">未訪問</span>' : '<span class="status-badge done">訪問済</span>';
+      const addressText = p.address ? '<div>'+mapsLink(p.address)+'</div>' : '';
+      card.innerHTML = '<div class="p-name">'+escapeHtml(p.name)+' '+badge+'</div><div class="p-sub">'+tagsHtml+addressText+'</div>';
+      card.onclick = ()=> go('placeDetail', {placeId:p.id});
+      card.querySelectorAll('a').forEach(a=>{ a.onclick = (e)=> e.stopPropagation(); });
       listWrap.appendChild(card);
-      const searchText = [p.name, (p.tags||[]).join(' '), p.address, p.comment, (p.urls||[]).join(' ')].filter(Boolean).join(' ').toLowerCase();
+      const searchText = [p.name, (p.tags||[]).join(' '), p.address, p.phone, p.comment, (p.urls||[]).join(' ')].filter(Boolean).join(' ').toLowerCase();
       cardEntries.push({el:card, text:searchText});
     });
 
@@ -1761,27 +1867,183 @@
     app.appendChild(main);
   }
 
+  function renderPlaceDetail(app){
+    const place = places.find(p=>p.id===state.placeId);
+    if(!place){ go('placeList',{}); return; }
+    subHeader(app, place.name, ()=>go('placeList',{}));
+    const main = el('div','main');
+
+    const head = el('div','dish-header-card');
+    const tagsHtml = (place.tags||[]).map(t=>'<span class="place-tag">'+escapeHtml(t)+'</span>').join('');
+    let html = '<h2>'+escapeHtml(place.name)+' '+(place.notVisited?'<span class="status-badge">未訪問</span>':'<span class="status-badge done">訪問済</span>')+'</h2>';
+    if(tagsHtml) html += '<div style="margin-bottom:6px;">'+tagsHtml+'</div>';
+    if(place.address) html += '<div class="dish-link-row">'+mapsLink(place.address)+'</div>';
+    if(place.phone) html += '<div class="dish-link-row">'+telLink(place.phone)+'</div>';
+    html += urlLinksHtml(place.urls);
+    if(place.comment) html += '<div style="margin-top:8px; font-size:13px; color:var(--ink-soft);">💬 '+escapeHtml(place.comment)+'</div>';
+    head.innerHTML = html;
+    const editLink = el('span','dish-edit-link','✎ 店の情報を編集');
+    editLink.onclick = ()=> go('placeInfoForm',{placeId:place.id});
+    head.appendChild(editLink);
+    main.appendChild(head);
+
+    const addVisitBtn = el('button','add-btn place','＋ 行った記録を追加');
+    addVisitBtn.onclick = ()=> go('placeVisitForm',{placeId:place.id});
+    main.appendChild(addVisitBtn);
+
+    const visits = [...(place.visits||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    if(visits.length===0){
+      main.appendChild(el('div','empty-state','まだ訪問記録がありません。'));
+    }
+    visits.forEach(v=>{
+      const card = el('div','version-card');
+      const headRow = el('div','version-head');
+      headRow.innerHTML = '<span class="version-badge">'+(v.date?fmtDate(v.date):'日付未定')+'</span><span class="version-date">'+(v.who?escapeHtml(v.who):'')+'</span>';
+      const delBtn = el('button','version-del','🗑');
+      delBtn.onclick = async (ev)=>{
+        ev.stopPropagation();
+        if(confirm('この訪問記録を削除しますか？')){
+          place.visits = place.visits.filter(x=>x.id!==v.id);
+          if(place.visits.length===0) place.notVisited = true;
+          await saveArr('memoz_places', places);
+          render();
+        }
+      };
+      headRow.appendChild(delBtn);
+      card.appendChild(headRow);
+      if(v.impression) card.appendChild(el('div','version-impression', escapeHtml(v.impression)));
+      card.onclick = ()=> go('placeVisitForm',{placeId:place.id, visitId:v.id});
+      main.appendChild(card);
+    });
+
+    const delPlaceBtn = el('button','delete-btn','この店を削除する');
+    delPlaceBtn.onclick = async ()=>{
+      if(confirm('「'+place.name+'」を削除します。よろしいですか？')){
+        places = places.filter(p=>p.id!==place.id);
+        await saveArr('memoz_places', places);
+        go('placeList',{});
+      }
+    };
+    main.appendChild(delPlaceBtn);
+
+    app.appendChild(main);
+  }
+
   function renderPlaceForm(app){
-    const editing = state.editId ? places.find(p=>p.id===state.editId) : null;
-    subHeader(app, editing?'行きたい店の編集':'行きたい店を追加', ()=>go('placeList',{}));
+    subHeader(app, '行きたい店を追加', ()=>go('placeList',{}));
     const main = el('div','main');
 
     const g1 = el('div','form-group');
     g1.appendChild(el('label','form-label','店名'));
-    const nameInput = el('input'); nameInput.type='text'; nameInput.value = editing?editing.name:''; nameInput.placeholder='例：〇〇食堂';
+    const nameInput = el('input'); nameInput.type='text'; nameInput.placeholder='例：〇〇食堂';
     g1.appendChild(nameInput);
     main.appendChild(g1);
 
-    const g2 = el('div','form-group');
-    g2.appendChild(el('label','form-label','日付'));
-    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing?(editing.date||todayStr()):todayStr();
-    g2.appendChild(dateInput);
-    main.appendChild(g2);
+    const g1b = el('div','form-group');
+    let notVisited = true;
+    const notVisitedBtn = el('div','unknown-toggle active','✓ まだ行っていない');
+    notVisitedBtn.onclick = ()=>{
+      notVisited = !notVisited;
+      notVisitedBtn.classList.toggle('active');
+      notVisitedBtn.textContent = notVisited ? '✓ まだ行っていない' : 'まだ行っていない';
+    };
+    g1b.appendChild(notVisitedBtn);
+    main.appendChild(g1b);
 
     const g3 = el('div','form-group');
     g3.appendChild(el('label','form-label','系統（複数選択可）'));
     const chipRow = el('div','chip-row');
-    let selectedTags = editing ? [...(editing.tags||[])] : [];
+    let selectedTags = [];
+    CATS.placeTags.forEach(t=>{
+      const chip = el('div','chip placec', t);
+      chip.onclick = ()=>{
+        if(selectedTags.includes(t)) selectedTags = selectedTags.filter(x=>x!==t);
+        else selectedTags.push(t);
+        chip.classList.toggle('active');
+      };
+      chipRow.appendChild(chip);
+    });
+    g3.appendChild(chipRow);
+    main.appendChild(g3);
+
+    const g4 = el('div','form-group');
+    g4.appendChild(el('label','form-label','参考にしたHP・動画のURL（任意・1行に1つずつ）'));
+    const urlsInput = el('textarea');
+    urlsInput.placeholder = 'https://...';
+    g4.appendChild(urlsInput);
+    main.appendChild(g4);
+
+    const g5 = el('div','form-group');
+    g5.appendChild(el('label','form-label','住所（任意）'));
+    const addressInput = el('input'); addressInput.type='text';
+    addressInput.placeholder = '例：東京都〇〇区…';
+    g5.appendChild(addressInput);
+    main.appendChild(g5);
+
+    const g5b = el('div','form-group');
+    g5b.appendChild(el('label','form-label','電話番号（任意）'));
+    const phoneInput = el('input'); phoneInput.type='tel';
+    phoneInput.placeholder = '例：03-1234-5678';
+    g5b.appendChild(phoneInput);
+    main.appendChild(g5b);
+
+    const g6 = el('div','form-group');
+    g6.appendChild(el('label','form-label','コメント（任意）'));
+    const commentInput = el('textarea');
+    commentInput.placeholder = '気になるポイントなど';
+    g6.appendChild(commentInput);
+    main.appendChild(g6);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn','登録する');
+    saveBtn.style.background = 'var(--blue)';
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      const name = nameInput.value.trim();
+      if(!name){ alert('店名を入力してください'); return; }
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      const urls = urlsInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      places.push({
+        id:uid(), name, tags:selectedTags, urls,
+        address:addressInput.value, phone:phoneInput.value, comment:commentInput.value,
+        notVisited, visits:[], createdAt: new Date().toISOString()
+      });
+      await saveArr('memoz_places', places);
+      go('placeList',{});
+    };
+    main.appendChild(saveBtn);
+    app.appendChild(main);
+  }
+
+  function renderPlaceInfoForm(app){
+    const place = places.find(p=>p.id===state.placeId);
+    if(!place){ go('placeList',{}); return; }
+    subHeader(app, '店の情報を編集', ()=>go('placeDetail',{placeId:place.id}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','店名'));
+    const nameInput = el('input'); nameInput.type='text'; nameInput.value = place.name;
+    g1.appendChild(nameInput);
+    main.appendChild(g1);
+
+    const g1b = el('div','form-group');
+    let notVisited = !!place.notVisited;
+    const notVisitedBtn = el('div','unknown-toggle' + (notVisited?' active':''), notVisited ? '✓ まだ行っていない' : 'まだ行っていない');
+    notVisitedBtn.onclick = ()=>{
+      notVisited = !notVisited;
+      notVisitedBtn.classList.toggle('active');
+      notVisitedBtn.textContent = notVisited ? '✓ まだ行っていない' : 'まだ行っていない';
+    };
+    g1b.appendChild(notVisitedBtn);
+    main.appendChild(g1b);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','系統（複数選択可）'));
+    const chipRow = el('div','chip-row');
+    let selectedTags = [...(place.tags||[])];
     CATS.placeTags.forEach(t=>{
       const chip = el('div','chip placec' + (selectedTags.includes(t)?' active':''), t);
       chip.onclick = ()=>{
@@ -1797,29 +2059,31 @@
     const g4 = el('div','form-group');
     g4.appendChild(el('label','form-label','参考にしたHP・動画のURL（任意・1行に1つずつ）'));
     const urlsInput = el('textarea');
-    urlsInput.value = editing ? (editing.urls||[]).join('\n') : '';
-    urlsInput.placeholder = 'https://...';
+    urlsInput.value = (place.urls||[]).join('\n');
     g4.appendChild(urlsInput);
     main.appendChild(g4);
 
     const g5 = el('div','form-group');
     g5.appendChild(el('label','form-label','住所（任意）'));
-    const addressInput = el('input'); addressInput.type='text'; addressInput.value = editing?(editing.address||''):'';
-    addressInput.placeholder = '例：東京都〇〇区…';
+    const addressInput = el('input'); addressInput.type='text'; addressInput.value = place.address||'';
     g5.appendChild(addressInput);
     main.appendChild(g5);
+
+    const g5b = el('div','form-group');
+    g5b.appendChild(el('label','form-label','電話番号（任意）'));
+    const phoneInput = el('input'); phoneInput.type='tel'; phoneInput.value = place.phone||'';
+    g5b.appendChild(phoneInput);
+    main.appendChild(g5b);
 
     const g6 = el('div','form-group');
     g6.appendChild(el('label','form-label','コメント（任意）'));
     const commentInput = el('textarea');
-    commentInput.value = editing?(editing.comment||''):'';
-    commentInput.placeholder = '気になるポイントなど';
+    commentInput.value = place.comment||'';
     g6.appendChild(commentInput);
     main.appendChild(g6);
 
     let submitted = false;
-    const saveBtn = el('button','save-btn', editing?'更新する':'登録する');
-    saveBtn.style.background = 'var(--blue)';
+    const saveBtn = el('button','save-btn','更新する');
     saveBtn.onclick = async ()=>{
       if(submitted) return;
       const name = nameInput.value.trim();
@@ -1827,24 +2091,75 @@
       submitted = true;
       saveBtn.disabled = true;
       saveBtn.style.opacity = '0.6';
-      const urls = urlsInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
-      if(editing){
-        editing.name = name; editing.date = dateInput.value; editing.tags = selectedTags; editing.urls = urls; editing.address = addressInput.value; editing.comment = commentInput.value;
-      } else {
-        places.push({id:uid(), name, date:dateInput.value, tags:selectedTags, urls, address:addressInput.value, comment:commentInput.value});
-      }
+      place.name = name;
+      place.tags = selectedTags;
+      place.urls = urlsInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      place.address = addressInput.value;
+      place.phone = phoneInput.value;
+      place.comment = commentInput.value;
+      place.notVisited = notVisited;
       await saveArr('memoz_places', places);
-      go('placeList',{});
+      go('placeDetail',{placeId:place.id});
+    };
+    main.appendChild(saveBtn);
+    app.appendChild(main);
+  }
+
+  function renderPlaceVisitForm(app){
+    const place = places.find(p=>p.id===state.placeId);
+    if(!place){ go('placeList',{}); return; }
+    const editing = state.visitId ? (place.visits||[]).find(v=>v.id===state.visitId) : null;
+    subHeader(app, editing?'訪問記録の編集':'行った記録を追加', ()=>go('placeDetail',{placeId:place.id}));
+    const main = el('div','main');
+
+    const g1 = el('div','form-group');
+    g1.appendChild(el('label','form-label','行った日（任意）'));
+    const dateInput = el('input'); dateInput.type='date'; dateInput.value = editing ? (editing.date||'') : '';
+    g1.appendChild(dateInput);
+    main.appendChild(g1);
+
+    const g2 = el('div','form-group');
+    g2.appendChild(el('label','form-label','だれと（任意）'));
+    const whoInput = el('input'); whoInput.type='text'; whoInput.value = editing?(editing.who||''):'';
+    whoInput.placeholder = '例：〇〇さんと';
+    g2.appendChild(whoInput);
+    main.appendChild(g2);
+
+    const g3 = el('div','form-group');
+    g3.appendChild(el('label','form-label','感想（任意）'));
+    const impressionInput = el('textarea');
+    impressionInput.value = editing?(editing.impression||''):'';
+    g3.appendChild(impressionInput);
+    main.appendChild(g3);
+
+    let submitted = false;
+    const saveBtn = el('button','save-btn', editing?'更新する':'保存する');
+    saveBtn.style.background = 'var(--blue)';
+    saveBtn.onclick = async ()=>{
+      if(submitted) return;
+      submitted = true;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      if(!place.visits) place.visits = [];
+      if(editing){
+        editing.date = dateInput.value; editing.who = whoInput.value; editing.impression = impressionInput.value;
+      } else {
+        place.visits.push({id:uid(), date:dateInput.value, who:whoInput.value, impression:impressionInput.value});
+      }
+      place.notVisited = false;
+      await saveArr('memoz_places', places);
+      go('placeDetail',{placeId:place.id});
     };
     main.appendChild(saveBtn);
 
     if(editing){
       const delBtn = el('button','delete-btn','削除する');
       delBtn.onclick = async ()=>{
-        if(confirm('この記録を削除しますか？')){
-          places = places.filter(p=>p.id!==editing.id);
+        if(confirm('この訪問記録を削除しますか？')){
+          place.visits = place.visits.filter(v=>v.id!==editing.id);
+          if(place.visits.length===0) place.notVisited = true;
           await saveArr('memoz_places', places);
-          go('placeList',{});
+          go('placeDetail',{placeId:place.id});
         }
       };
       main.appendChild(delBtn);
@@ -1878,8 +2193,10 @@
     sorted.forEach(w=>{
       const card = el('div','want-card');
       const commentHtml = w.comment ? '<div>💬 '+escapeHtml(w.comment)+'</div>' : '';
-      card.innerHTML = '<div class="w-name">'+escapeHtml(w.item)+(w.product?'　'+escapeHtml(w.product):'')+'</div><div class="w-sub">'+(w.date?fmtDate(w.date):'')+commentHtml+'</div>';
+      const linksHtml = urlLinksHtml(w.refUrls, 'want-link-row') + urlLinksHtml(w.shopUrls, 'want-link-row');
+      card.innerHTML = '<div class="w-name">'+escapeHtml(w.item)+(w.product?'　'+escapeHtml(w.product):'')+'</div><div class="w-sub">'+(w.date?fmtDate(w.date):'')+commentHtml+linksHtml+'</div>';
       card.onclick = ()=> go('wantForm', {editId:w.id});
+      card.querySelectorAll('a').forEach(a=>{ a.onclick = (e)=> e.stopPropagation(); });
       listWrap.appendChild(card);
       const searchText = [w.item, w.product, w.comment, (w.refUrls||[]).join(' '), (w.shopUrls||[]).join(' ')].filter(Boolean).join(' ').toLowerCase();
       cardEntries.push({el:card, text:searchText});
@@ -2079,6 +2396,11 @@
       loadArr('memoz_wants'),
       loadArr('memoz_places')
     ]);
+    try{ history.replaceState(state, '', '#home'); }catch(e){}
+    window.addEventListener('popstate', (ev)=>{
+      state = ev.state || {page:'home'};
+      render();
+    });
     render();
   }
   init();
