@@ -623,7 +623,7 @@
     personalCats: ["ジュース","コンビニ：おやつ","コンビニ：朝","コンビニ：昼","コンビニ：夜","外食：朝","外食：昼","飲み会：一人","飲み会：複数","日本酒/ワイン"],
     entCats: ["パチスロ","麻雀"],
     mealTypes: ["朝食","昼食","夕食","おやつ"],
-    placeTags: ["居酒屋","魚","肉","こだわりビール","メキシコ","日本料理","イタリア","おでん","刺身","すし"]
+    placeTags: ["居酒屋","魚","肉","こだわりビール","メキシコ","日本料理","イタリア","おでん","刺身","すし","日本酒","牡蠣","ワイン","焼き肉","とんかつ","もつ","らーめん"]
   };
 
   let todos = [];
@@ -982,6 +982,18 @@
     });
     main.appendChild(yearRow);
 
+    // date-based (default) vs category-based breakdown toggle
+    const groupStateKey = 'group_' + cfg.navClass;
+    const groupMode = state[groupStateKey] === 'category' ? 'category' : 'date';
+    const groupRow = el('div','year-chip-row');
+    const dateModeBtn = el('div','year-chip ' + cfg.navClass + (groupMode==='date'?' active':''), '日付ごと');
+    dateModeBtn.onclick = ()=>{ state[groupStateKey] = 'date'; render(); };
+    const catModeBtn = el('div','year-chip ' + cfg.navClass + (groupMode==='category'?' active':''), '項目ごと');
+    catModeBtn.onclick = ()=>{ state[groupStateKey] = 'category'; render(); };
+    groupRow.appendChild(dateModeBtn);
+    groupRow.appendChild(catModeBtn);
+    main.appendChild(groupRow);
+
     const yearItems = cfg.data.filter(i=> (i[cfg.dateKey]||'').slice(0,4) === year);
     const yearTotal = yearItems.reduce((s,it)=>s+cfg.amountOf(it),0);
     const yearNote = cfg.noteOf ? cfg.noteOf(yearItems) : '';
@@ -1009,19 +1021,23 @@
         head.innerHTML = '<span class="m-label">'+parseInt(mk,10)+'月'+(monthNote?' <span style="font-size:11px;font-weight:600;color:var(--ink-soft);">'+monthNote+'</span>':'')+'</span><span class="m-total" style="color:'+(total<0?'var(--red)':'var(--ink)')+'">'+(total<0?'−':'')+fmt(Math.abs(total))+'</span>';
         card.appendChild(head);
 
-        const byCat = {};
-        const byCatItems = {};
+        const byKey = {};
+        const byKeyItems = {};
         items.forEach(it=>{
-          const c = it[cfg.catKey];
-          byCat[c] = (byCat[c]||0) + cfg.amountOf(it);
-          if(!byCatItems[c]) byCatItems[c] = [];
-          byCatItems[c].push(it);
+          const k = groupMode==='category' ? it[cfg.catKey] : it[cfg.dateKey];
+          byKey[k] = (byKey[k]||0) + cfg.amountOf(it);
+          if(!byKeyItems[k]) byKeyItems[k] = [];
+          byKeyItems[k].push(it);
         });
-        Object.keys(byCat).sort((a,b)=>Math.abs(byCat[b])-Math.abs(byCat[a])).forEach(c=>{
-          const amt = byCat[c];
-          const note = cfg.noteOf ? cfg.noteOf(byCatItems[c]) : '';
+        const sortedKeys = groupMode==='category'
+          ? Object.keys(byKey).sort((a,b)=>Math.abs(byKey[b])-Math.abs(byKey[a]))
+          : Object.keys(byKey).sort().reverse();
+        sortedKeys.forEach(k=>{
+          const amt = byKey[k];
+          const note = cfg.noteOf ? cfg.noteOf(byKeyItems[k]) : '';
+          const label = groupMode==='category' ? k : fmtDate(k);
           const row = el('div','breakdown-row');
-          row.innerHTML = '<span>'+c+(note?' <span style="opacity:0.75;">'+note+'</span>':'')+'</span><span style="color:'+(amt<0?'var(--red)':'var(--ink)')+'">'+(amt<0?'−':'')+fmt(Math.abs(amt))+'</span>';
+          row.innerHTML = '<span>'+label+(note?' <span style="opacity:0.75;">'+note+'</span>':'')+'</span><span style="color:'+(amt<0?'var(--red)':'var(--ink)')+'">'+(amt<0?'−':'')+fmt(Math.abs(amt))+'</span>';
           card.appendChild(row);
         });
         main.appendChild(card);
