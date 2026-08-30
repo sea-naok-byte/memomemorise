@@ -433,6 +433,37 @@
   }
   .amount-preview .num{font-size:24px; font-weight:800; color:var(--gold);}
   .amount-preview .cap{font-size:11px; color:var(--ink-soft); font-weight:700;}
+  .total-row{display:flex; gap:8px; align-items:stretch; margin-bottom:16px;}
+  .total-box{
+    flex:0 0 66%;
+    max-width:66%;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:14px 16px;
+    box-shadow:var(--shadow);
+    text-align:left;
+  }
+  .total-box .num{font-size:21px; font-weight:800;}
+  .total-box .cap{font-size:11px; color:var(--ink-soft); font-weight:700; margin-top:3px;}
+  .group-toggle-col{flex:1; display:flex; flex-direction:column; gap:6px; min-width:0;}
+  .mini-toggle-btn{
+    flex:1;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    border-radius:10px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--ink-soft);
+    padding:2px 2px;
+    text-align:center;
+  }
+  .mini-toggle-btn.active.shift{background:var(--gold); border-color:var(--gold); color:white;}
+  .mini-toggle-btn.active.personal{background:var(--teal); border-color:var(--teal); color:white;}
+  .mini-toggle-btn.active.ent{background:var(--plum); border-color:var(--plum); color:white;}
+  .mini-toggle-btn.active.calorie{background:var(--amber); border-color:var(--amber); color:white;}
   .save-btn{
     width:100%;
     padding:14px;
@@ -592,19 +623,20 @@
   }
   .place-card .p-name, .want-card .w-name{font-size:15px; font-weight:700;}
   .place-card .p-sub, .want-card .w-sub{font-size:12px; color:var(--ink-soft); margin-top:4px; line-height:1.6;}
+  .p-tags-row{display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-top:5px;}
   .place-tag{
     display:inline-block;
     background:var(--blue-soft); color:var(--blue);
-    font-size:11px; font-weight:700;
-    padding:2px 8px; border-radius:999px;
-    margin:3px 4px 0 0;
+    font-size:10.5px; font-weight:700;
+    padding:2px 7px; border-radius:999px;
   }
   .status-badge{
     display:inline-block;
-    font-size:10.5px; font-weight:800;
-    padding:2px 8px; border-radius:999px;
+    font-size:9.5px; font-weight:800;
+    padding:1.5px 7px; border-radius:999px;
     background:var(--amber-soft); color:var(--amber);
     vertical-align:middle;
+    flex-shrink:0;
   }
   .status-badge.done{background:var(--sage-soft); color:var(--sage);}
   .want-link-row{font-size:12px; margin-top:3px; word-break:break-all;}
@@ -985,19 +1017,25 @@
     // date-based (default) vs category-based breakdown toggle
     const groupStateKey = 'group_' + cfg.navClass;
     const groupMode = state[groupStateKey] === 'category' ? 'category' : 'date';
-    const groupRow = el('div','year-chip-row');
-    const dateModeBtn = el('div','year-chip ' + cfg.navClass + (groupMode==='date'?' active':''), '日付ごと');
-    dateModeBtn.onclick = ()=>{ state[groupStateKey] = 'date'; render(); };
-    const catModeBtn = el('div','year-chip ' + cfg.navClass + (groupMode==='category'?' active':''), '項目ごと');
-    catModeBtn.onclick = ()=>{ state[groupStateKey] = 'category'; render(); };
-    groupRow.appendChild(dateModeBtn);
-    groupRow.appendChild(catModeBtn);
-    main.appendChild(groupRow);
 
     const yearItems = cfg.data.filter(i=> (i[cfg.dateKey]||'').slice(0,4) === year);
     const yearTotal = yearItems.reduce((s,it)=>s+cfg.amountOf(it),0);
     const yearNote = cfg.noteOf ? cfg.noteOf(yearItems) : '';
-    main.appendChild(el('div','amount-preview','<div class="num" style="color:'+(yearTotal<0?'var(--red)':'var(--ink)')+'">'+fmt(yearTotal)+'</div><div class="cap">'+year+'年 合計'+(yearNote?'　'+yearNote:'')+'</div>'));
+
+    const totalRow = el('div','total-row');
+    const totalBox = el('div','total-box');
+    totalBox.innerHTML = '<div class="num" style="color:'+(yearTotal<0?'var(--red)':'var(--ink)')+'">'+fmt(yearTotal)+'</div><div class="cap">'+year+'年 合計'+(yearNote?'　'+yearNote:'')+'</div>';
+    totalRow.appendChild(totalBox);
+
+    const toggleCol = el('div','group-toggle-col');
+    const dateModeBtn = el('div','mini-toggle-btn ' + cfg.navClass + (groupMode==='date'?' active':''), '日付ごと');
+    dateModeBtn.onclick = ()=>{ state[groupStateKey] = 'date'; render(); };
+    const catModeBtn = el('div','mini-toggle-btn ' + cfg.navClass + (groupMode==='category'?' active':''), '項目ごと');
+    catModeBtn.onclick = ()=>{ state[groupStateKey] = 'category'; render(); };
+    toggleCol.appendChild(dateModeBtn);
+    toggleCol.appendChild(catModeBtn);
+    totalRow.appendChild(toggleCol);
+    main.appendChild(totalRow);
 
     const byMonth = {};
     yearItems.forEach(it=>{
@@ -1867,7 +1905,8 @@
       const tagsHtml = (p.tags||[]).map(t=>'<span class="place-tag">'+escapeHtml(t)+'</span>').join('');
       const badge = p.notVisited ? '<span class="status-badge">未訪問</span>' : '<span class="status-badge done">訪問済</span>';
       const addressText = p.address ? '<div>'+mapsLink(p.address)+'</div>' : '';
-      card.innerHTML = '<div class="p-name">'+escapeHtml(p.name)+' '+badge+'</div><div class="p-sub">'+tagsHtml+addressText+'</div>';
+      const urlsText = urlLinksHtml(p.urls, 'want-link-row');
+      card.innerHTML = '<div class="p-name">'+escapeHtml(p.name)+'</div><div class="p-tags-row">'+badge+tagsHtml+'</div><div class="p-sub">'+addressText+urlsText+'</div>';
       card.onclick = ()=> go('placeDetail', {placeId:p.id});
       card.querySelectorAll('a').forEach(a=>{ a.onclick = (e)=> e.stopPropagation(); });
       listWrap.appendChild(card);
@@ -1892,7 +1931,7 @@
     const head = el('div','dish-header-card');
     const tagsHtml = (place.tags||[]).map(t=>'<span class="place-tag">'+escapeHtml(t)+'</span>').join('');
     let html = '<h2>'+escapeHtml(place.name)+' '+(place.notVisited?'<span class="status-badge">未訪問</span>':'<span class="status-badge done">訪問済</span>')+'</h2>';
-    if(tagsHtml) html += '<div style="margin-bottom:6px;">'+tagsHtml+'</div>';
+    if(tagsHtml) html += '<div class="p-tags-row" style="margin-bottom:6px;">'+tagsHtml+'</div>';
     if(place.address) html += '<div class="dish-link-row">'+mapsLink(place.address)+'</div>';
     if(place.phone) html += '<div class="dish-link-row">'+telLink(place.phone)+'</div>';
     html += urlLinksHtml(place.urls);
