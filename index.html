@@ -616,14 +616,32 @@
     background:var(--card);
     border:1px solid var(--card-border);
     border-radius:14px;
-    padding:14px 16px;
-    margin-bottom:10px;
+    padding:10px 14px;
+    margin-bottom:8px;
     box-shadow:var(--shadow);
     cursor:pointer;
   }
-  .place-card .p-name, .want-card .w-name{font-size:15px; font-weight:700;}
-  .place-card .p-sub, .want-card .w-sub{font-size:12px; color:var(--ink-soft); margin-top:4px; line-height:1.6;}
-  .p-tags-row{display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-top:5px;}
+  .place-card .p-name, .want-card .w-name{font-size:14px; font-weight:700;}
+  .place-card .p-sub, .want-card .w-sub{font-size:12px; color:var(--ink-soft); margin-top:3px; line-height:1.5;}
+  .p-tags-row{display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-top:4px;}
+  .p-meta-row{display:flex; align-items:center; gap:6px; margin-top:4px; flex-wrap:nowrap;}
+  .p-address-trunc{
+    font-size:11.5px; color:var(--ink-soft);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    max-width:70%;
+    flex-shrink:1;
+    min-width:0;
+  }
+  .p-address-trunc a{color:var(--blue);}
+  .link-btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px;
+    border-radius:50%;
+    background:var(--blue-soft); color:var(--blue);
+    font-size:11px;
+    text-decoration:none;
+    flex-shrink:0;
+  }
   .place-tag{
     display:inline-block;
     background:var(--blue-soft); color:var(--blue);
@@ -1904,9 +1922,10 @@
       const card = el('div','place-card');
       const tagsHtml = (p.tags||[]).map(t=>'<span class="place-tag">'+escapeHtml(t)+'</span>').join('');
       const badge = p.notVisited ? '<span class="status-badge">未訪問</span>' : '<span class="status-badge done">訪問済</span>';
-      const addressText = p.address ? '<div>'+mapsLink(p.address)+'</div>' : '';
-      const urlsText = urlLinksHtml(p.urls, 'want-link-row');
-      card.innerHTML = '<div class="p-name">'+escapeHtml(p.name)+'</div><div class="p-tags-row">'+badge+tagsHtml+'</div><div class="p-sub">'+addressText+urlsText+'</div>';
+      const addressText = p.address ? '<span class="p-address-trunc">'+mapsLink(p.address)+'</span>' : '';
+      const urlBtns = (p.urls||[]).map(u=>'<a class="link-btn" href="'+escapeHtml(u)+'" target="_blank" rel="noopener" title="'+escapeHtml(u)+'">🔗</a>').join('');
+      const metaRow = (addressText || urlBtns) ? '<div class="p-meta-row">'+addressText+urlBtns+'</div>' : '';
+      card.innerHTML = '<div class="p-name">'+escapeHtml(p.name)+'</div><div class="p-tags-row">'+badge+tagsHtml+'</div>'+metaRow;
       card.onclick = ()=> go('placeDetail', {placeId:p.id});
       card.querySelectorAll('a').forEach(a=>{ a.onclick = (e)=> e.stopPropagation(); });
       listWrap.appendChild(card);
